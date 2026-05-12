@@ -1,0 +1,63 @@
+package com.dsastream.server.ds;
+
+import com.dsastream.model.ListNode;
+
+public class HashTable {
+    private class HashEntry {
+        int key;
+        ListNode listNode;
+        HashEntry next;
+
+        public HashEntry(int key, ListNode listNode) {
+            this.key = key;
+            this.listNode = listNode;
+            this.next = null;
+        }
+    }
+
+    private HashEntry[] table;
+    private int capacity;
+
+    public HashTable(int capacity) {
+        this.capacity = capacity;
+        this.table = new HashEntry[capacity];
+    }
+
+    public int hashFunction(int key) {
+        return key % capacity;
+    }
+
+    // Inserts the ID and the Node reference into the hash table
+    public void put(int key, ListNode listNode) {
+        int index = hashFunction(key);
+        HashEntry newEntry = new HashEntry(key, listNode);
+
+        if (table[index] == null) {
+            table[index] = newEntry;
+        } else {
+            HashEntry current = table[index];
+            while (current.next != null) {
+                current = current.next;
+            }
+            current.next = newEntry;
+        }
+    }
+
+    public ListNode searchIndexed(int key) {
+        int comparisions = 0;
+        int index = hashFunction(key);
+        HashEntry current = table[index];
+
+        while (current != null) {
+            comparisions++;
+            if (current.key == key) {
+                System.out.println("Busca indexada finalizada. Comparações = " + comparisions);
+                return current.listNode;
+            }
+            current = current.next;
+        }
+
+        System.out.println("Filme não encontrado na tabela hash. Comparações = " + comparisions);
+        return null;
+    }
+}
