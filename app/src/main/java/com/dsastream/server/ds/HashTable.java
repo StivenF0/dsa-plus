@@ -3,7 +3,7 @@ package com.dsastream.server.ds;
 import com.dsastream.model.ListNode;
 
 public class HashTable {
-    private class HashEntry {
+    private static class HashEntry {
         int key;
         ListNode listNode;
         HashEntry next;
@@ -15,8 +15,8 @@ public class HashTable {
         }
     }
 
-    private HashEntry[] table;
-    private int capacity;
+    private final HashEntry[] table;
+    private final int capacity;
 
     public HashTable(int capacity) {
         this.capacity = capacity;
@@ -44,6 +44,11 @@ public class HashTable {
     }
 
     public ListNode searchIndexed(int key) {
+        if (key <= 0) {
+            System.out.println("Busca rejeitada. ID inválido: " + key);
+            return null;
+        }
+
         int comparisions = 0;
         int index = hashFunction(key);
         HashEntry current = table[index];

@@ -29,6 +29,11 @@ public class LinkedList {
 
     // Searches for a movie by ID
     public Movie searchSequential(int id) {
+        if (id <= 0) {
+            System.out.println("Busca rejeitada. ID inválido: " + id);
+            return null;
+        }
+
         int comparisions = 0;
         ListNode current = head;
 
