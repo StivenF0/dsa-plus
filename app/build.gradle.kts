@@ -21,9 +21,13 @@ java {
 }
 
 application {
-    mainClass = "org.example.App"
+    mainClass = "com.dsastream.Main"
 }
 
 tasks.named<Test>("test") {
     useJUnitPlatform()
+}
+
+tasks.named<JavaExec>("run") {
+    standardInput = System.`in`
 }
