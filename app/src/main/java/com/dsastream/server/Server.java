@@ -20,7 +20,7 @@ public class Server {
 
         for (int i = 1; i <= 1000; i++) {
             String title = "Movie Title " + i;
-            String category = "Category " + ((i % 5) + 1); // Gera 5 categorias diferentes
+            String category = "Category " + ((i % 5) + 1);
             Movie movie = new Movie(i, title, category);
             ListNode insertedListNode = database.add(movie);
             index.put(i, insertedListNode);
