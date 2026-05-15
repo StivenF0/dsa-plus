@@ -1,6 +1,8 @@
 package com.dsastream.server.ds;
 
 import com.dsastream.model.Movie;
+import java.util.ArrayList;
+import java.util.List;
 
 public class LinkedList {
     private ListNode head;
@@ -53,5 +55,22 @@ public class LinkedList {
 
     public ListNode getHead() {
         return head;
+    }
+
+    public List<Movie> searchByTitleFragment(String fragment) {
+        List<Movie> results = new ArrayList<>();
+        String normalizedFragment = fragment.toLowerCase().trim();
+        ListNode current = head;
+        int comparisons = 0;
+
+        while (current != null) {
+            comparisons++;
+            if (current.getMovie().getTitle().toLowerCase().contains(normalizedFragment)) {
+                results.add(current.getMovie());
+            }
+            current = current.getNext();
+        }
+        System.out.println("Busca sequencial por trecho finalizada. Comparações = " + comparisons + ", resultados = " + results.size());
+        return results;
     }
 }
