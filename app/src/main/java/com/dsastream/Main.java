@@ -5,6 +5,7 @@ import com.dsastream.model.Movie;
 import com.dsastream.server.Server;
 
 import java.util.InputMismatchException;
+import java.util.List;
 import java.util.Scanner;
 
 public class Main {
@@ -38,9 +39,12 @@ public class Main {
                         interactiveSearch(scanner, client, server);
                         break;
                     case 2:
-                        runTestBattery(client, server);
+                        interactiveSearchByTitle(scanner, server);
                         break;
                     case 3:
+                        runTestBattery(client, server);
+                        break;
+                    case 4:
                         printAnalysis();
                         break;
                     case 0:
@@ -65,9 +69,10 @@ public class Main {
         System.out.println("\n==================================================");
         System.out.println("               MENU PRINCIPAL                     ");
         System.out.println("==================================================");
-        System.out.println("1. Buscar um Filme");
-        System.out.println("2. Executar Bateria de 20 Consultas");
-        System.out.println("3. Ler Análise dos Resultados");
+        System.out.println("1. Buscar um Filme por ID");
+        System.out.println("2. Buscar Filme por Trecho do Nome");
+        System.out.println("3. Executar Bateria de 20 Consultas");
+        System.out.println("4. Ler Análise dos Resultados");
         System.out.println("0. Sair");
         System.out.println("==================================================");
     }
@@ -93,6 +98,23 @@ public class Main {
         } catch (InputMismatchException e) {
             System.out.println("[ERRO] ID inválido. Digite um número inteiro.");
             scanner.nextLine();
+        }
+    }
+
+    private static void interactiveSearchByTitle(Scanner scanner, Server server) {
+        System.out.print("\nDigite um trecho do título do filme: ");
+        scanner.nextLine();
+        String fragment = scanner.nextLine();
+
+        List<Movie> results = server.requestMoviesByTitle(fragment);
+
+        if (results == null || results.isEmpty()) {
+            System.out.println("\n[App] Nenhum filme encontrado com o trecho: \"" + fragment + "\"");
+        } else {
+            System.out.println("\n[App] Filmes encontrados (" + results.size() + "):");
+            for (Movie m : results) {
+                System.out.println(" - " + m);
+            }
         }
     }
 
