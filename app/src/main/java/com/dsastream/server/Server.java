@@ -11,8 +11,8 @@ public class Server {
 
     public Server() {
         this.database = new LinkedList();
-        // 1021 was chosen as the size of the hash table because it is the closest prime number to 2^10 (1024)
-        this.index = new HashTable(1021);
+        // 509 was chosen as the size of the hash table because it is the closest prime number to 2^5 (512)
+        this.index = new HashTable(509);
     }
 
     public void loadInitialData() {
