@@ -95,7 +95,6 @@ public class AVLTree {
     // --- Balancing Utility Methods ---
 
     private AVLNode checkBalancing(AVLNode node) {
-        // Atualiza a altura do nó atual usando setter
         node.setHeight(1 + Math.max(getHeight(node.getLeft()), getHeight(node.getRight())));
 
         int fb = getBalanceFactor(node);
