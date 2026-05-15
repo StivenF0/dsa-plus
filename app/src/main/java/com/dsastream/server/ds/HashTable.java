@@ -14,15 +14,15 @@ public class HashTable {
     }
 
     private final HashEntry[] table;
-    private final int capacity;
+    private final int size;
 
-    public HashTable(int capacity) {
-        this.capacity = capacity;
-        this.table = new HashEntry[capacity];
+    public HashTable(int size) {
+        this.size = size;
+        this.table = new HashEntry[size];
     }
 
     public int hashFunction(int key) {
-        return key % capacity;
+        return key % size;
     }
 
     // Inserts the ID and the Node reference into the hash table
