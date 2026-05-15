@@ -1,7 +1,5 @@
 package com.dsastream.client.ds;
 
-import com.dsastream.model.QueueNode;
-
 public class CacheQueue {
     private QueueNode front;
     private QueueNode rear;

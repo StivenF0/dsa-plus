@@ -1,4 +1,4 @@
-package com.dsastream.model;
+package com.dsastream.client.ds;
 
 public class QueueNode {
     private int id;

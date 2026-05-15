@@ -1,4 +1,6 @@
-package com.dsastream.model;
+package com.dsastream.client.ds;
+
+import com.dsastream.model.Movie;
 
 public class AVLNode {
     private int id;

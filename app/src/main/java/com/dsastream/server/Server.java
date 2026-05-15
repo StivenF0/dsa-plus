@@ -1,7 +1,7 @@
 package com.dsastream.server;
 
 import com.dsastream.model.Movie;
-import com.dsastream.model.ListNode;
+import com.dsastream.server.ds.ListNode;
 import com.dsastream.server.ds.HashTable;
 import com.dsastream.server.ds.LinkedList;
 

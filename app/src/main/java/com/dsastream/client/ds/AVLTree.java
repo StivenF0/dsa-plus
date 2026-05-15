@@ -1,7 +1,6 @@
 package com.dsastream.client.ds;
 
 import com.dsastream.model.Movie;
-import com.dsastream.model.AVLNode;
 
 public class AVLTree {
 

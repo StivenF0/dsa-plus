@@ -1,4 +1,6 @@
-package com.dsastream.model;
+package com.dsastream.server.ds;
+
+import com.dsastream.model.Movie;
 
 public class ListNode {
     private Movie movie;

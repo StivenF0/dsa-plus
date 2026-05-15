@@ -1,7 +1,5 @@
 package com.dsastream.server.ds;
 
-import com.dsastream.model.ListNode;
-
 public class HashTable {
     private static class HashEntry {
         int key;
