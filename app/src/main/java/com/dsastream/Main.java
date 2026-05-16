@@ -1,5 +1,6 @@
 package com.dsastream;
 
+import com.dsastream.client.CategoryConsoleViewer;
 import com.dsastream.client.Client;
 import com.dsastream.model.Movie;
 import com.dsastream.server.Server;
@@ -32,6 +33,7 @@ public class Main {
 
             try {
                 int option = scanner.nextInt();
+                scanner.nextLine();
 
                 switch (option) {
                     case 1:
@@ -44,9 +46,12 @@ public class Main {
                         interactiveSearchByTitle(scanner, server);
                         break;
                     case 4:
-                        runTestBattery(client, server);
+                        CategoryConsoleViewer.handleCategoryPagination(scanner, server, (id) -> executeQuery(client, server, id, true));
                         break;
                     case 5:
+                        runTestBattery(client, server);
+                        break;
+                    case 6:
                         printAnalysis();
                         break;
                     case 0:
@@ -74,8 +79,9 @@ public class Main {
         System.out.println("1. Buscar um Filme por ID");
         System.out.println("2. Buscar um Filme por ID (SEM Índice)");
         System.out.println("3. Buscar Filme por Trecho do Nome");
-        System.out.println("4. Executar Bateria de 20 Consultas");
-        System.out.println("5. Ler Análise dos Resultados");
+        System.out.println("4. Listar e Paginar por Categoria");
+        System.out.println("5. Executar Bateria de 20 Consultas");
+        System.out.println("6. Ler Análise dos Resultados");
         System.out.println("0. Sair");
         System.out.println("==================================================");
     }
@@ -113,7 +119,6 @@ public class Main {
 
     private static void interactiveSearchByTitle(Scanner scanner, Server server) {
         System.out.print("\nDigite um trecho do título do filme: ");
-        scanner.nextLine();
         String fragment = scanner.nextLine();
 
         List<Movie> results = server.requestMoviesByTitle(fragment);
