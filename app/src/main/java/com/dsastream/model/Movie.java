@@ -39,10 +39,6 @@ public class Movie {
 
     @Override
     public String toString() {
-        return "Filme{" +
-                "id=" + id +
-                ", titulo='" + title + '\'' +
-                ", categoria='" + category + '\'' +
-                '}';
+        return "[ID: " + id + "] " + title + " (" + category + ")";
     }
 }
