@@ -25,7 +25,7 @@ public class HashTable {
         return key % size;
     }
 
-    // Inserts the ID and the Node reference into the hash table
+    // Insere o ID do filme e o nó correspondente na tabela hash
     public void put(int key, ListNode listNode) {
         int index = hashFunction(key);
         HashEntry newEntry = new HashEntry(key, listNode);
@@ -41,6 +41,7 @@ public class HashTable {
         }
     }
 
+    // Busca o nó correspondente ao ID do filme usando a tabela hash
     public ListNode searchIndexed(int key) {
         if (key <= 0) {
             System.out.println("Busca rejeitada. ID inválido: " + key);
