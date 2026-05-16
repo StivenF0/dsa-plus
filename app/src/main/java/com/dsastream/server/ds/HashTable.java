@@ -22,7 +22,14 @@ public class HashTable {
     }
 
     public int hashFunction(int key) {
-        return key % size;
+        // Utilizando o método da multiplicação para calcular o índice
+        // h(k) = floor(m * ((k*A) % 1))
+        double A = (Math.sqrt(5) - 1) / 2; // Constante de Knuth
+
+        // Cálculo por partes
+        double val = key * A;
+        double fracPart = val % 1;
+        return (int) Math.floor(size * fracPart);
     }
 
     // Insere o ID do filme e o nó correspondente na tabela hash
