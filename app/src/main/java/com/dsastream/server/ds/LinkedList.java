@@ -11,7 +11,7 @@ public class LinkedList {
         this.head = null;
     }
 
-    // Adds a movie to the LinkedList and returns it
+    // Adiciona um filme à lista ligada e o retorna
     public ListNode add(Movie movie) {
         ListNode newListNode = new ListNode(movie);
 
@@ -28,7 +28,7 @@ public class LinkedList {
         return newListNode;
     }
 
-    // Searches for a movie by ID
+    // Busca um filme pelo ID
     public Movie searchSequential(int id) {
         if (id <= 0) {
             System.out.println("Busca rejeitada. ID inválido: " + id);
@@ -57,6 +57,7 @@ public class LinkedList {
         return head;
     }
 
+    // Busca filmes cujo título contém o fragmento fornecido (ignora maiúsculas/minúsculas)
     public List<Movie> searchByTitleFragment(String fragment) {
         List<Movie> results = new ArrayList<>();
         String normalizedFragment = fragment.toLowerCase().trim();

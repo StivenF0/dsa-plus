@@ -10,17 +10,18 @@ public class AVLTree {
         this.root = null;
     }
 
-    // --- Search and Counting Methods ---
+    // --- Métodos de busca e contagem ---
 
     public Movie search(int id) {
+        // Usando a referência do array para contar as comparações durante a busca
         int[] comparisons = {0};
         AVLNode result = searchRecursive(this.root, id, comparisons);
 
         if (result == null) {
-            System.out.println("Cache Miss! (Filme " + id + " não está na AVL). Comparações na árvore: " + comparisons[0]);
+            System.out.println("[CACHE MISS] (Filme \"" + id + "\" não está na AVL). Comparações na árvore: " + comparisons[0]);
             return null;
         } else {
-            System.out.println("Cache Hit! (Filme " + id + " encontrado na AVL). Comparações na árvore: " + comparisons[0]);
+            System.out.println("[CACHE HIT] (Filme \"" + id + "\" encontrado na AVL). Comparações na árvore: " + comparisons[0]);
             return result.getMovie();
         }
     }
@@ -41,7 +42,7 @@ public class AVLTree {
         }
     }
 
-    // --- Insertion and Removal Methods ---
+    // --- Métodos de Inserção e Remoção ---
 
     public void insert(int id, Movie movie) {
         this.root = insertRecursive(this.root, id, movie);
@@ -73,13 +74,13 @@ public class AVLTree {
         } else if (id > node.getId()) {
             node.setRight(removeRecursive(node.getRight(), id));
         } else {
-            // Found the node to be deleted
+            // Encontrou o nó a ser deletado
             if (node.getLeft() == null) {
                 return node.getRight();
             } else if (node.getRight() == null) {
                 return node.getLeft();
             } else {
-                // Case 3: Node with two children
+                // Caso 3: Nó com dois filhos
                 AVLNode temp = nodeWithMinId(node.getRight());
                 node.setId(temp.getId());
                 node.setMovie(temp.getMovie());
@@ -92,7 +93,7 @@ public class AVLTree {
         return checkBalancing(node);
     }
 
-    // --- Balancing Utility Methods ---
+    // --- Métodos auxiliares de balanceamento ---
 
     private AVLNode checkBalancing(AVLNode node) {
         node.setHeight(1 + Math.max(getHeight(node.getLeft()), getHeight(node.getRight())));
@@ -101,21 +102,21 @@ public class AVLTree {
         int fbLeft = getBalanceFactor(node.getLeft());
         int fbRight = getBalanceFactor(node.getRight());
 
-        // Simple right rotation
+        // Rotação simples à direita
         if (fb > 1 && fbLeft >= 0)
             return rotateRight(node);
 
-        // Simple left rotation
+        // Rotação simples à esquerda
         if (fb < -1 && fbRight <= 0)
             return rotateLeft(node);
 
-        // Double right rotation
+        // Rotação dupla à direita
         if (fb > 1 && fbLeft < 0) {
             node.setLeft(rotateLeft(node.getLeft()));
             return rotateRight(node);
         }
 
-        // Double left rotation
+        // Rotação dupla à esquerda
         if (fb < -1 && fbRight > 0) {
             node.setRight(rotateRight(node.getRight()));
             return rotateLeft(node);

@@ -19,7 +19,7 @@ public class Server {
     private TitlePrefixIndex titleIndex;
     private HashMap<String, List<Movie>> categoryIndex;
 
-    // 509 was chosen as the size of the hash table because it is the closest prime number to 2^5 (512)
+    // 509 foi escolhido como o tamanho da tabela hash por ser o número primo mais próximo de 2^9 (512)
     private static final int TABLE_SIZE = 509;
 
     public Server() {
@@ -49,7 +49,7 @@ public class Server {
                     continue;
                 }
 
-                // The data is split using semicolons
+                // As colunas são separadas por ponto e vírgula (;)
                 String[] data = line.split(";");
 
                 if (data.length >= 3) {
@@ -59,7 +59,7 @@ public class Server {
 
                     Movie movie = new Movie(id, title, category);
 
-                    // Putting the data on database and indexes
+                    // Adicionando os dados ao banco de dados e aos índices
                     ListNode insertedNode = database.add(movie);
                     index.put(id, insertedNode);
                     if (title.length() >= 3) {
@@ -83,6 +83,7 @@ public class Server {
             System.out.println("[SERVIDOR]: Erro ao ler o ficheiro CSV: " + e.getMessage());
         }
     }
+
     public Movie requestMovieWithoutIndex(int id) {
         System.out.println("\n--- [SERVIDOR]: Recebida requisição SEM índice para o ID " + id + " ---");
         return database.searchSequential(id);
@@ -120,7 +121,7 @@ public class Server {
             }
         }
 
-        // Fallback to sequential search if fragment < 3 or prefix not found
+        // Fallback para busca sequencial se o fragmento for < 3 ou o prefixo não for encontrado
         return database.searchByTitleFragment(fragment);
     }
 
@@ -145,7 +146,7 @@ public class Server {
         return allMovies.subList(startIndex, endIndex);
     }
 
-    // --- Getters and Setters ---
+    // --- Getters e Setters ---
 
     public LinkedList getDatabase() {
         return database;

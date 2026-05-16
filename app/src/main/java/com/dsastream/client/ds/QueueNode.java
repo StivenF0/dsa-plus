@@ -9,7 +9,7 @@ public class QueueNode {
         this.next = null;
     }
 
-    // --- Getters and Setters ---
+    // --- Getters e Setters ---
 
     public int getId() {
         return id;

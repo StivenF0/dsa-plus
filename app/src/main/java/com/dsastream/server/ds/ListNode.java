@@ -11,7 +11,7 @@ public class ListNode {
         this.next = null;
     }
 
-    // --- Getters and Setters ---
+    // --- Getters e Setters ---
 
     public Movie getMovie() {
         return movie;

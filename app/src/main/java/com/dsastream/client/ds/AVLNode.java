@@ -8,8 +8,6 @@ public class AVLNode {
     private AVLNode left, right;
     private int height;
 
-    public AVLNode() {}
-
     public AVLNode(int id, Movie movie) {
         this.id = id;
         this.movie = movie;
@@ -18,7 +16,7 @@ public class AVLNode {
         this.height = 0;
     }
 
-    // --- Setters and Getters ---
+    // --- Setters e Getters ---
 
     public int getId() {
         return id;

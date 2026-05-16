@@ -11,7 +11,7 @@ public class CacheQueue {
         this.size = 0;
     }
 
-    // Adds a new ID to the rear of the queue
+    // Adiciona um novo ID ao final da fila
     public void enqueue(int id) {
         QueueNode newNode = new QueueNode(id);
         if (rear == null) {
@@ -24,9 +24,9 @@ public class CacheQueue {
         size++;
     }
 
-    // Removes and returns the ID at the front of the queue. Returns -1 if the queue is empty.
+    // Remove e retorna o ID da frente da fila. Retorna -1 se a fila estiver vazia.
     public int dequeue() {
-        // Empty queue case
+        // Caso de fila vazia
         if (front == null) {
             return -1;
         }

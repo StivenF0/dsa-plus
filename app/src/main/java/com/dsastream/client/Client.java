@@ -5,8 +5,10 @@ import com.dsastream.client.ds.CacheQueue;
 import com.dsastream.model.Movie;
 
 public class Client {
-    private AVLTree cacheTree;
-    private CacheQueue evictionQueue;
+    private final AVLTree cacheTree;
+    private final CacheQueue evictionQueue;
+
+    @SuppressWarnings("FieldCanBeLocal")
     private final int MAX_CACHE_SIZE = 50;
 
     public Client() {
@@ -29,26 +31,26 @@ public class Client {
         System.out.println("\n--- [CLIENTE]: Adicionando '" + movie.getTitle() + "' ao cache ---");
         int id = movie.getId();
 
-        // Checks if the movie is already in the cache to avoid duplicates
+        // Verifica se o filme já está no cache para evitar duplicatas
         if (cacheTree.search(id) != null) {
             System.out.println("\n--- [CLIENTE]: O filme '" + movie.getTitle() + "' já está no cache. ---");
             return;
         }
 
-        // If the cache is full, remove the oldest movie before adding the new one
+        // Se o cache estiver cheio, remove o filme mais antigo antes de adicionar o novo
         if (evictionQueue.getSize() >= MAX_CACHE_SIZE) {
             int oldestId = evictionQueue.dequeue();
             cacheTree.remove(oldestId);
             System.out.println("\n--- [CLIENTE]: Cache cheio! Removendo o filme ID " + oldestId + " ---");
         }
 
-        // Add the new movie to the cache and update the eviction queue
+        // Adiciona o novo filme ao cache e atualiza a fila de expulsão
         cacheTree.insert(id, movie);
         evictionQueue.enqueue(id);
-        System.out.println("\n--- [CLIENTE]: Filme '" + movie.getTitle() + "' adicionado ao cache. ---");
+        System.out.println("\n--- [CLIENTE]: Filme '[" + movie.getId() + "] " + movie.getTitle() + "' adicionado ao cache. ---");
     }
 
-    // --- Getters and Setters ---
+    // --- Getters e Setters ---
 
     public AVLTree getCacheTree() {
         return cacheTree;

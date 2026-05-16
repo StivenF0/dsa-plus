@@ -11,7 +11,7 @@ public class Movie {
         this.category = category;
     }
 
-    // --- Getters and Setters ---
+    // --- Getters e Setters ---
 
     public int getId() {
         return id;
