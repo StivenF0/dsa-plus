@@ -5,6 +5,10 @@ import com.dsastream.server.ds.ListNode;
 import com.dsastream.server.ds.HashTable;
 import com.dsastream.server.ds.LinkedList;
 import com.dsastream.server.ds.TitlePrefixIndex;
+
+import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -13,40 +17,67 @@ public class Server {
     private HashTable index;
     private TitlePrefixIndex titleIndex;
 
+    // 509 was chosen as the size of the hash table because it is the closest prime number to 2^5 (512)
+    private static final int TABLE_SIZE = 509;
+
     public Server() {
         this.database = new LinkedList();
-        // 509 was chosen as the size of the hash table because it is the closest prime number to 2^5 (512)
-        this.index = new HashTable(509);
-        this.titleIndex = new TitlePrefixIndex(509);
+        this.index = new HashTable(TABLE_SIZE);
+        this.titleIndex = new TitlePrefixIndex(TABLE_SIZE);
     }
 
     public void loadInitialData() {
-        System.out.println("Servidor: Carregando 1000 filmes na base de dados...");
+        System.out.println("[SERVIDOR]: Carregando catálogo de filmes via CSV...");
 
-        for (int i = 1; i <= 1000; i++) {
-            String title = "Movie Title " + i;
-            String category = "Category " + ((i % 5) + 1);
-            Movie movie = new Movie(i, title, category);
-            ListNode insertedListNode = database.add(movie);
-            index.put(i, insertedListNode);
+        try (InputStream is = getClass().getResourceAsStream("/csv/movies_dataset.csv");
+             BufferedReader br = new BufferedReader(new InputStreamReader(is, "UTF-8"))) {
 
-            // Indexing by prefix of 3 characters
-            if (title.length() >= 3) {
-                String prefix = title.substring(0, 3).toLowerCase();
-                titleIndex.put(prefix, movie);
+            if (is == null) {
+                System.out.println("[SERVIDOR]: Ficheiro CSV não encontrado!");
+                return;
             }
+
+            String line;
+            boolean isFirstLine = true;
+
+            while ((line = br.readLine()) != null) {
+                if (isFirstLine) {
+                    isFirstLine = false;
+                    continue;
+                }
+
+                // The data is split using semicolons
+                String[] data = line.split(";");
+
+                if (data.length >= 3) {
+                    int id = Integer.parseInt(data[0].trim());
+                    String title = data[1].trim();
+                    String category = data[2].trim();
+
+                    Movie movie = new Movie(id, title, category);
+
+                    // Putting the data on database and indexes
+                    ListNode insertedNode = database.add(movie);
+                    index.put(id, insertedNode);
+                    if (title.length() >= 3) {
+                        String prefix = title.substring(0, 3).toLowerCase();
+                        titleIndex.put(prefix, movie);
+                    }
+                }
+            }
+            System.out.println("[SERVIDOR]: Catálogo TMDB carregado com sucesso!");
+
+        } catch (Exception e) {
+            System.out.println("[SERVIDOR]: Erro ao ler o ficheiro CSV: " + e.getMessage());
         }
-
-        System.out.println("Servidor: Catálogo carregado com sucesso!");
     }
-
     public Movie requestMovieWithoutIndex(int id) {
-        System.out.println("\n--- Servidor: Recebida requisição SEM índice para o ID " + id + " ---");
+        System.out.println("\n--- [SERVIDOR]: Recebida requisição SEM índice para o ID " + id + " ---");
         return database.searchSequential(id);
     }
 
     public Movie requestMovieWithIndex(int id) {
-        System.out.println("\n--- Servidor: Recebida requisição COM índice para o ID " + id + " ---");
+        System.out.println("\n--- [SERVIDOR]: Recebida requisição COM índice para o ID " + id + " ---");
         ListNode foundListNode = index.searchIndexed(id);
 
         if (foundListNode != null) {
@@ -79,5 +110,11 @@ public class Server {
 
         // Fallback to sequential search if fragment < 3 or prefix not found
         return database.searchByTitleFragment(fragment);
+    }
+
+    // --- Getters and Setters ---
+
+    public LinkedList getDatabase() {
+        return database;
     }
 }

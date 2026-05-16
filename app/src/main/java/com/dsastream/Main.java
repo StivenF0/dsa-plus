@@ -3,6 +3,7 @@ package com.dsastream;
 import com.dsastream.client.Client;
 import com.dsastream.model.Movie;
 import com.dsastream.server.Server;
+import com.dsastream.server.ds.ListNode;
 
 import java.util.InputMismatchException;
 import java.util.List;
@@ -13,9 +14,7 @@ public class Main {
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
 
-        System.out.println("==================================================");
-        System.out.println("   INICIALIZANDO SISTEMA DE STREAMING...          ");
-        System.out.println("==================================================");
+        System.out.println("Inicializando Sistema DSA-STREAM...");
 
         // Client and Server initialization
         Server server = new Server();
@@ -39,12 +38,15 @@ public class Main {
                         interactiveSearch(scanner, client, server);
                         break;
                     case 2:
-                        interactiveSearchByTitle(scanner, server);
+                        interactiveSearch(scanner, client, server, false);
                         break;
                     case 3:
-                        runTestBattery(client, server);
+                        interactiveSearchByTitle(scanner, server);
                         break;
                     case 4:
+                        runTestBattery(client, server);
+                        break;
+                    case 5:
                         printAnalysis();
                         break;
                     case 0:
@@ -67,12 +69,13 @@ public class Main {
 
     private static void printMenu() {
         System.out.println("\n==================================================");
-        System.out.println("               MENU PRINCIPAL                     ");
+        System.out.println("                    DSA-STREAM");
         System.out.println("==================================================");
         System.out.println("1. Buscar um Filme por ID");
-        System.out.println("2. Buscar Filme por Trecho do Nome");
-        System.out.println("3. Executar Bateria de 20 Consultas");
-        System.out.println("4. Ler Análise dos Resultados");
+        System.out.println("2. Buscar um Filme por ID (SEM Índice)");
+        System.out.println("3. Buscar Filme por Trecho do Nome");
+        System.out.println("4. Executar Bateria de 20 Consultas");
+        System.out.println("5. Ler Análise dos Resultados");
         System.out.println("0. Sair");
         System.out.println("==================================================");
     }
@@ -80,21 +83,28 @@ public class Main {
     // --- MÉTODOS DE LÓGICA E REQUISITOS ---
 
     private static void preloadCache(Client client, Server server) {
-        System.out.println("[SISTEMA] Pré-carregando 50 filmes no cache do Cliente...");
-        for (int i = 1; i <= 50; i++) {
-            Movie m = server.requestMovieWithIndex(i);
-            if (m != null) {
-                client.addToCache(m);
-            }
+        System.out.println("[SISTEMA] Pré-carregando catálogo inicial no cache do Cliente...");
+        // Modificado para pré-carregar os primeiros 50 itens que estão fisicamente na lista
+        ListNode current = server.getDatabase().getHead();
+        int count = 0;
+
+        while (current != null && count < 50) {
+            client.addToCache(current.getMovie());
+            current = current.getNext();
+            count++;
         }
-        System.out.println("[SISTEMA] Cache inicializado com sucesso!");
+        System.out.println("[SISTEMA] Cache inicializado com " + count + " filmes!");
     }
 
     private static void interactiveSearch(Scanner scanner, Client client, Server server) {
+        interactiveSearch(scanner, client, server, true);
+    }
+
+    private static void interactiveSearch(Scanner scanner, Client client, Server server, boolean useIndex) {
         System.out.print("\nDigite o ID do filme que deseja assistir (1 a 1000): ");
         try {
             int targetId = scanner.nextInt();
-            executeQuery(client, server, targetId, true);
+            executeQuery(client, server, targetId, useIndex);
         } catch (InputMismatchException e) {
             System.out.println("[ERRO] ID inválido. Digite um número inteiro.");
             scanner.nextLine();
@@ -123,25 +133,33 @@ public class Main {
         System.out.println("       INICIANDO BATERIA DE 20 CONSULTAS          ");
         System.out.println("==================================================\n");
 
-        System.out.println(">>> ETAPA 1: 2 Consultas Inválidas ");
-        executeQuery(client, server, 1005, true);
+        System.out.println(">>> ETAPA 1: 2 Consultas Inválidas");
         executeQuery(client, server, -5, true);
+        executeQuery(client, server, 0, true);
 
         System.out.println("\n>>> ETAPA 2: 6 Consultas de registros no Cache (Hits)");
-        int[] cacheIds = {5, 10, 20, 30, 40, 50};
-        for (int id : cacheIds) executeQuery(client, server, id, true);
+        // Como agora temos IDs reais que não são sequenciais (ex: Matrix = 603)
+        // Pegamos os IDs dos primeiros 6 itens da lista para testar o Hit
+        int count = 0;
+        ListNode current = server.getDatabase().getHead();
+        while (current != null && count < 6) {
+            executeQuery(client, server, current.getMovie().getId(), true);
+            current = current.getNext();
+            count++;
+        }
 
-        System.out.println("\n>>> ETAPA 3: 6 Consultas SEM Indexação (Varredura na Lista)");
-        int[] slowIds = {100, 150, 200, 250, 300, 350};
+        System.out.println("\n>>> ETAPA 3: 6 Consultas SEM Indexação (Miss Lento)");
+        // IDs fictícios (3 que não existem no servidor e 3 que existem mas não estão no cache)
+        int[] slowIds = {99901, 99902, 99903, 38055, 575264, 813};
         for (int id : slowIds) executeQuery(client, server, id, false);
 
-        System.out.println("\n>>> ETAPA 4: 6 Consultas COM Indexação (Tabela Hash)");
-        int[] fastIds = {500, 600, 700, 800, 900, 1000};
+        System.out.println("\n>>> ETAPA 4: 6 Consultas COM Indexação (Miss Rápido)");
+        // IDs fictícios (3 que não existem no servidor e 3 que existem mas não estão no cache)
+        int[] fastIds = {88801, 88802, 88803, 140300, 810693, 524434};
         for (int id : fastIds) executeQuery(client, server, id, true);
 
         System.out.println("\n[SISTEMA] Bateria de testes concluída!");
     }
-
 
     private static void executeQuery(Client client, Server server, int searchId, boolean useIndex) {
         System.out.println("\n-> Buscando ID: " + searchId);
@@ -156,16 +174,9 @@ public class Main {
             } else {
                 movie = server.requestMovieWithoutIndex(searchId);
             }
-
-            // Atualiza Cache e Exibe
-            if (movie != null) {
-                client.addToCache(movie);
-            } else {
-                System.out.println("[App] Erro 404: Filme não encontrado no catálogo do servidor.");
-            }
-        } else {
-            System.out.println("[App] Reproduzindo '" + movie.getTitle() + "' a partir do Cache local!");
         }
+
+        client.viewMovie(movie);
     }
 
     private static void printAnalysis() {
