@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class LinkedList {
+
     private ListNode head;
 
     public LinkedList() {
@@ -53,10 +54,6 @@ public class LinkedList {
         return null;
     }
 
-    public ListNode getHead() {
-        return head;
-    }
-
     // Busca filmes cujo título contém o fragmento fornecido (ignora maiúsculas/minúsculas)
     public List<Movie> searchByTitleFragment(String fragment) {
         List<Movie> results = new ArrayList<>();
@@ -71,7 +68,18 @@ public class LinkedList {
             }
             current = current.getNext();
         }
-        System.out.println("Busca sequencial por trecho finalizada. Comparações = " + comparisons + ", resultados = " + results.size());
+        System.out.println(
+            "Busca sequencial por trecho finalizada. Comparações = " +
+                comparisons +
+                ", resultados = " +
+                results.size()
+        );
         return results;
+    }
+
+    // --- Getters e Setters ---
+
+    public ListNode getHead() {
+        return head;
     }
 }
