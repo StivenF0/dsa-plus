@@ -16,19 +16,22 @@ public class Client {
 
     public void viewMovie(Movie movie) {
         if (movie == null) {
-            System.out.println("Cliente: Erro! Título não encontrado no servidor.");
+            System.out.println("\n--- [CLIENTE]: Erro! Título não encontrado no servidor. ---");
             return;
         }
 
-        System.out.println("Cliente: Preparando para exibir '" + movie.getTitle() + "'...");
+        System.out.println("\n--- [CLIENTE]: Preparando para exibir '" + movie.getTitle() + "' ---");
+        System.out.println(movie);
         addToCache(movie);
     }
 
     public void addToCache(Movie movie) {
+        System.out.println("\n--- [CLIENTE]: Adicionando '" + movie.getTitle() + "' ao cache ---");
         int id = movie.getId();
 
         // Checks if the movie is already in the cache to avoid duplicates
         if (cacheTree.search(id) != null) {
+            System.out.println("\n--- [CLIENTE]: O filme '" + movie.getTitle() + "' já está no cache. ---");
             return;
         }
 
@@ -36,13 +39,13 @@ public class Client {
         if (evictionQueue.getSize() >= MAX_CACHE_SIZE) {
             int oldestId = evictionQueue.dequeue();
             cacheTree.remove(oldestId);
-            System.out.println("Cliente: Cache cheio! Removendo o filme ID " + oldestId);
+            System.out.println("\n--- [CLIENTE]: Cache cheio! Removendo o filme ID " + oldestId + " ---");
         }
 
         // Add the new movie to the cache and update the eviction queue
         cacheTree.insert(id, movie);
         evictionQueue.enqueue(id);
-        System.out.println("Cliente: Filme '" + movie.getTitle() + "' adicionado ao cache.");
+        System.out.println("\n--- [CLIENTE]: Filme '" + movie.getTitle() + "' adicionado ao cache. ---");
     }
 
     // --- Getters and Setters ---
