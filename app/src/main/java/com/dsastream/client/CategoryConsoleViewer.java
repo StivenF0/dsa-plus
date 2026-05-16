@@ -7,7 +7,7 @@ import java.util.Scanner;
 
 public class CategoryConsoleViewer {
 
-    public static void handleCategoryPagination(Scanner scanner, Server server, MainMainExecutor queryExecutor) {
+    public static void handleCategoryPagination(Scanner scanner, Server server, MainExecutor queryExecutor) {
         System.out.print("\nDigite a categoria desejada (ex: Ação, Drama, Comédia): ");
         String category = scanner.nextLine().toLowerCase().trim();
 
@@ -60,7 +60,7 @@ public class CategoryConsoleViewer {
 
     // Interface funcional para conectar com o executor do Main sem acoplamento circular
     @FunctionalInterface
-    public interface MainMainExecutor {
+    public interface MainExecutor {
         void execute(int id);
     }
 }
