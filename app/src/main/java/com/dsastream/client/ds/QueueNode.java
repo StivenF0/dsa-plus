@@ -1,7 +1,7 @@
 package com.dsastream.client.ds;
 
 public class QueueNode {
-    private int id;
+    private final int id;
     private QueueNode next;
 
     public QueueNode(int id) {

@@ -9,15 +9,16 @@ import com.dsastream.server.ds.TitlePrefixIndex;
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
 public class Server {
-    private LinkedList database;
-    private HashTable index;
-    private TitlePrefixIndex titleIndex;
-    private HashMap<String, List<Movie>> categoryIndex;
+    private final LinkedList database;
+    private final HashTable index;
+    private final TitlePrefixIndex titleIndex;
+    private final HashMap<String, List<Movie>> categoryIndex;
 
     // 509 foi escolhido como o tamanho da tabela hash por ser o número primo mais próximo de 2^9 (512)
     private static final int TABLE_SIZE = 509;
@@ -33,7 +34,7 @@ public class Server {
         System.out.println("[SERVIDOR]: Carregando catálogo de filmes via CSV...");
 
         try (InputStream is = getClass().getResourceAsStream("/csv/movies_dataset.csv");
-             BufferedReader br = new BufferedReader(new InputStreamReader(is, "UTF-8"))) {
+             BufferedReader br = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8))) {
 
             if (is == null) {
                 System.out.println("[SERVIDOR]: Ficheiro CSV não encontrado!");
