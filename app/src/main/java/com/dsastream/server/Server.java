@@ -10,12 +10,14 @@ import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 public class Server {
     private LinkedList database;
     private HashTable index;
     private TitlePrefixIndex titleIndex;
+    private HashMap<String, List<Movie>> categoryIndex;
 
     // 509 was chosen as the size of the hash table because it is the closest prime number to 2^5 (512)
     private static final int TABLE_SIZE = 509;
@@ -24,6 +26,7 @@ public class Server {
         this.database = new LinkedList();
         this.index = new HashTable(TABLE_SIZE);
         this.titleIndex = new TitlePrefixIndex(TABLE_SIZE);
+        this.categoryIndex = new HashMap<>();
     }
 
     public void loadInitialData() {
@@ -63,6 +66,15 @@ public class Server {
                         String prefix = title.substring(0, 3).toLowerCase();
                         titleIndex.put(prefix, movie);
                     }
+
+                    // Building category index
+                    String categoryKey = category.toLowerCase().trim();
+                    List<Movie> categoryMovies = categoryIndex.get(categoryKey);
+                    if (categoryMovies == null) {
+                        categoryMovies = new ArrayList<>();
+                        categoryIndex.put(categoryKey, categoryMovies);
+                    }
+                    categoryMovies.add(movie);
                 }
             }
             System.out.println("[SERVIDOR]: Catálogo TMDB carregado com sucesso!");
@@ -110,6 +122,27 @@ public class Server {
 
         // Fallback to sequential search if fragment < 3 or prefix not found
         return database.searchByTitleFragment(fragment);
+    }
+
+    public int getTotalMoviesInCategory(String category) {
+        List<Movie> movies = categoryIndex.get(category.toLowerCase().trim());
+        return movies != null ? movies.size() : 0;
+    }
+
+    public List<Movie> requestMoviesByCategory(String category, int page, int pageSize) {
+        List<Movie> allMovies = categoryIndex.get(category.toLowerCase().trim());
+
+        if (allMovies == null || allMovies.isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        int startIndex = (page - 1) * pageSize;
+        if (startIndex >= allMovies.size() || startIndex < 0) {
+            return new ArrayList<>();
+        }
+
+        int endIndex = Math.min(startIndex + pageSize, allMovies.size());
+        return allMovies.subList(startIndex, endIndex);
     }
 
     // --- Getters and Setters ---
