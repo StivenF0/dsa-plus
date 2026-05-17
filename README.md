@@ -37,7 +37,7 @@ O cliente simula o comportamento de um dispositivo local focado em economia de b
 
 ### 3. Camada de Apresentação (CLI)
 
-- **`Main` e `CategoryConsoleViewer`:** Isolam as interações de menus, capturas de teclado e renderização de ecrãs das regras de negócio do servidor ou do cliente.
+- **`Main` e `CategoryConsoleViewer`:** Isolam as interações de menus, capturas de teclado e renderização de telas das regras de negócio do servidor ou do cliente.
 
 ---
 
