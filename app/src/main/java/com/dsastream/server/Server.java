@@ -5,6 +5,8 @@ import com.dsastream.server.ds.ListNode;
 import com.dsastream.server.ds.HashTable;
 import com.dsastream.server.ds.LinkedList;
 import com.dsastream.server.ds.TitlePrefixIndex;
+import com.dsastream.common.ds.SplayNode;
+import com.dsastream.common.ds.SplayTree;
 import com.dsastream.util.CsvParser;
 
 import java.util.ArrayList;
@@ -16,6 +18,7 @@ public class Server {
     private final HashTable index;
     private final TitlePrefixIndex titleIndex;
     private final HashMap<String, List<Movie>> categoryIndex;
+    private final SplayTree popularity;
 
     // 509 foi escolhido como o tamanho da tabela hash por ser o número primo mais próximo de 2^9 (512)
     private static final int TABLE_SIZE = 509;
@@ -25,6 +28,7 @@ public class Server {
         this.index = new HashTable(TABLE_SIZE);
         this.titleIndex = new TitlePrefixIndex(TABLE_SIZE);
         this.categoryIndex = new HashMap<>();
+        this.popularity = new SplayTree();
     }
 
     public void loadInitialData() {
@@ -37,6 +41,8 @@ public class Server {
             return;
         }
 
+        List<Movie> allMovies = new ArrayList<>();
+
         for (String[] data : records) {
             if (data.length < 3) continue;
 
@@ -48,6 +54,7 @@ public class Server {
             String synopsis = data.length >= 5 ? data[4].trim() : "";
 
             Movie movie = new Movie(id, title, category, year, synopsis);
+            allMovies.add(movie);
 
             ListNode insertedNode = database.add(movie);
             index.put(id, insertedNode);
@@ -65,12 +72,24 @@ public class Server {
             categoryMovies.add(movie);
         }
 
+        // Pré-popula a árvore splay de popularidade em ordem reversa (menos popular primeiro)
+        // para que os filmes mais populares (topo do CSV) fiquem mais próximos da raiz
+        for (int i = allMovies.size() - 1; i >= 0; i--) {
+            Movie movie = allMovies.get(i);
+            popularity.insert(movie.getId(), movie);
+        }
+        allMovies.clear();
+
         System.out.println("[SERVIDOR]: Catálogo carregado com sucesso! Total: " + records.size() + " filmes.");
     }
 
     public Movie requestMovieWithoutIndex(int id) {
         System.out.println("\n--- [SERVIDOR]: Recebida requisição SEM índice para o ID " + id + " ---");
-        return database.searchSequential(id);
+        Movie movie = database.searchSequential(id);
+        if (movie != null) {
+            popularity.insert(id, movie);
+        }
+        return movie;
     }
 
     public Movie requestMovieWithIndex(int id) {
@@ -78,7 +97,9 @@ public class Server {
         ListNode foundListNode = index.searchIndexed(id);
 
         if (foundListNode != null) {
-            return foundListNode.getMovie();
+            Movie movie = foundListNode.getMovie();
+            popularity.insert(id, movie);
+            return movie;
         }
         return null;
     }
@@ -128,6 +149,19 @@ public class Server {
 
         int endIndex = Math.min(startIndex + pageSize, allMovies.size());
         return allMovies.subList(startIndex, endIndex);
+    }
+
+    // Retorna os n filmes mais populares (mais próximos da raiz da splay)
+    public List<Movie> getTopMovies(int n) {
+        List<Movie> top = new ArrayList<>();
+        for (SplayNode node : popularity.getTop(n)) {
+            top.add(node.getValue());
+        }
+        return top;
+    }
+
+    public SplayTree getPopularity() {
+        return popularity;
     }
 
     // --- Getters e Setters ---
