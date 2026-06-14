@@ -6,11 +6,17 @@ O **DSA-PLUS** é a segunda versão de uma aplicação de interface de linha de 
 
 ## Funcionalidades
 
-- **Catálogo Realista:** Base de dados populada com 1000 filmes reais e populares, importados via API do TMDB (The Movie Database).
-- **Busca Otimizada:** Pesquisa de filmes por ID (com e sem uso de índices) e por trechos ou prefixos do título.
+- **Catálogo Realista:** Base de dados populada com 1000 filmes reais e populares, importados via API do TMDB (The Movie Database), com ano de lançamento e sinopse.
+- **Busca Otimizada:** Pesquisa de filmes por ID (com hash table para busca indexada $O(1)$ e sem índice para busca sequencial $O(n)$) e por trechos ou prefixos do título.
 - **Paginação por Categoria:** Navegação dinâmica e paginada por obras agrupadas por categoria (Ação, Drama, Comédia, etc.) em tempo constante.
-- **Sistema de Cache Local:** Simulação de um dispositivo cliente com memória limitada a 50 itens, utilizando cache para respostas quase instantâneas.
-- **Bateria de Testes Integrada:** Execução automatizada de 20 consultas simuladas que contabilizam e reportam o número exato de comparações feitas por cada estrutura de dados.
+- **Cache LRU:** Cada cliente possui cache local com capacidade de 50 filmes utilizando política **Least Recently Used** (LRU), implementada com HashMap + DoublyLinkedList para hits $O(1)$.
+- **Multi-cliente:** Suporte a 3 usuários simultâneos (Alice, Bob, Charlie), cada um com cache e árvore de preferências independentes.
+- **Sistema de Recomendação:** Baseado em Splay Tree de preferências — o filme mais acessado (raiz da árvore) determina a categoria recomendada.
+- **Rastreamento de Popularidade:** O servidor mantém uma Splay Tree de popularidade que se reorganiza a cada acesso, mantendo os filmes mais requisitados próximos à raiz.
+- **Compressão Huffman:** Mensagens do sistema (LOGIN_OK, consultas, recomendações) são comprimidas com codificação de Huffman utilizando MinHeap próprio, exibindo taxa de compressão na análise final.
+- **Bateria de Testes Integrada:** Execução automatizada de 20 consultas por cliente (inválidas, cache hit, com e sem índice) que contabilizam e reportam o número de comparações de cada estrutura de dados.
+- **Análise Final:** Tela detalhada com top 10 LRU por cliente, top 5 preferências por cliente, top 10 popularidade do servidor, histórico de evicções LRU e estatísticas de compressão Huffman.
+- **Logger Estruturado:** Sistema de logging com níveis (DEBUG/INFO/WARN/ERROR) e cores ANSI, suprimindo mensagens de debug durante a bateria de testes.
 - **Resiliência e Proteção contra Falhas:** Tratamento robusto de exceções (como `InputMismatchException` no teclado) e validação de limites de páginas ou IDs inválidos.
 
 ---
@@ -27,17 +33,26 @@ O servidor atua como o repositório central e persistente de dados, otimizado pa
 - **Indexação Primária por ID (`HashTable`):** Utilizada para buscas instantâneas de filmes por ID. Implementa o **Método da Multiplicação de Knuth** ($A \approx 0.618$ baseado na proporção áurea) para a função de dispersão, mitigando colisões através de encadeamento separado (_Separate Chaining_). Reduz o tempo de busca no servidor para $O(1)$.
 - **Indexação por Categoria (`categoryIndex`):** Utiliza a estrutura `HashMap` nativa do Java para mapear categorias a listas de filmes, permitindo fatiar e paginar os resultados de forma imediata em $O(1)$.
 - **Indexação por Prefixo de Título (`TitlePrefixIndex`):** Tabela Hash customizada baseada em strings (utilizando _Polynomial Rolling Hash_) para acelerar a pesquisa de títulos pelos 3 primeiros caracteres.
+- **Rastreamento de Popularidade (`SplayTree`):** Árvore Splay que se reorganiza a cada acesso via operação `splay()`, mantendo os filmes mais requisitados próximos à raiz. A pré-carga do CSV insere os filmes em ordem reversa (menos populares primeiro), posicionando os TOPs do catálogo na raiz após todas as inserções.
 
 ### 2. Camada do Cliente (Frontend & Cache)
 
 O cliente simula o comportamento de um dispositivo local focado em economia de banda e latência:
 
-- **Cache Estrutural (`AVLTree`):** Implementação baseada em uma árvore binária de busca rigidamente balanceada através de rotações simples e duplas. Garante consultas locais em tempo $O(\log n)$.
-- **Política de Esvaziamento (Cache Eviction - FIFO):** O cache possui um limite fixo de 50 nós. Para evitar varreduras caras na árvore, utiliza uma fila auxiliar nativa (`CacheQueue`) que rastreia a ordem de entrada dos IDs. Quando o limite é atingido, o ID mais antigo é desenfileirado e removido da árvore AVL, mantendo a operação em complexidade $O(\log n)$.
+- **Cache LRU (`LRUCache`):** Combinação de HashMap (para lookup $O(1)$) com DoublyLinkedList para ordenar por recência. Ao atingir o limite de 50 filmes, remove o menos recentemente utilizado (cauda da lista). Hits movem o nó ao topo (head), mantendo os filmes mais acessados sempre disponíveis.
+- **Árvore de Preferências (`SplayTree`):** Cada cliente mantém uma Splay Tree que armazena os filmes assistidos. A raiz da árvore contém o filme mais acessado, e sua categoria é utilizada como recomendação personalizada.
 
-### 3. Camada de Apresentação (CLI)
+### 3. Compressão de Mensagens (Huffman)
 
-- **`Main` e `CategoryConsoleViewer`:** Isolam as interações de menus, capturas de teclado e renderização de telas das regras de negócio do servidor ou do cliente.
+- **`HuffmanCoding` e `MinHeap`:** Implementação de codificação de Huffman do zero. Constrói a árvore de compressão utilizando um MinHeap genérico para selecionar os dois menores nós a cada iteração. Comprime mensagens do sistema (LOGIN_OK, consultas, recomendações) e exibe taxa de compressão na análise final.
+
+### 4. Sistema de Logging
+
+- **`Logger`:** Sistema de logging com níveis DEBUG/INFO/WARN/ERROR, cores ANSI e formato padronizado `[LEVEL] [Tag] Mensagem`. Durante a bateria de testes, o nível é elevado para INFO, suprimindo mensagens de debug internas das estruturas de dados.
+
+### 5. Camada de Apresentação (CLI)
+
+- **`Main` e `CategoryConsoleViewer`:** Isolam as interações de menus, capturas de teclado e renderização de telas das regras de negócio do servidor ou do cliente. O menu principal oferece 3 clientes (Alice, Bob, Charlie), bateria automatizada de 60 consultas e tela de análise final com estatísticas completas.
 
 ---
 
