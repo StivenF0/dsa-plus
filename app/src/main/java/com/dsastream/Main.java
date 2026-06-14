@@ -2,9 +2,11 @@ package com.dsastream;
 
 import com.dsastream.client.CategoryConsoleViewer;
 import com.dsastream.client.Client;
+import com.dsastream.common.ds.SplayNode;
 import com.dsastream.model.Movie;
 import com.dsastream.server.Server;
 import com.dsastream.server.ds.ListNode;
+import com.dsastream.util.HuffmanCoding;
 
 import java.util.InputMismatchException;
 import java.util.List;
@@ -17,23 +19,33 @@ public class Main {
 
         System.out.println("Inicializando Sistema DSA-STREAM...");
 
-        // Client and Server initialization
+        // Server initialization
         Server server = new Server();
         server.loadInitialData();
 
-        Client client = new Client("Cliente 1");
-        preloadCache(client, server); // Load 50 movies into client's cache
+        // Three pre-registered clients
+        Client[] clients = {
+            new Client("Alice"),
+            new Client("Bob"),
+            new Client("Charlie")
+        };
 
+        // Pre-load 50 movies into each client's cache
+        for (Client client : clients) {
+            preloadCache(client, server);
+        }
+
+        Client currentClient = clients[0];
         boolean isRunning = true;
 
-        // Main loop for user interaction
         while (isRunning) {
-            printMenu();
+            printMenu(currentClient.getName());
             System.out.print("Escolha uma opção: ");
 
             try {
                 int option = scanner.nextInt();
                 scanner.nextLine();
+                final Client client = currentClient;
 
                 switch (option) {
                     case 1:
@@ -46,13 +58,19 @@ public class Main {
                         interactiveSearchByTitle(scanner, server);
                         break;
                     case 4:
-                        CategoryConsoleViewer.handleCategoryPagination(scanner, server, (id) -> executeQuery(client, server, id, true));
+                        CategoryConsoleViewer.handleCategoryPagination(
+                            scanner, server,
+                            (id) -> executeQuery(client, server, id, true)
+                        );
                         break;
                     case 5:
-                        runTestBattery(client, server);
+                        currentClient = selectClient(scanner, clients);
                         break;
                     case 6:
-                        printAnalysis();
+                        runTestBattery(clients, server);
+                        break;
+                    case 7:
+                        showFinalAnalysis(clients, server);
                         break;
                     case 0:
                         System.out.println("\n[SISTEMA] Encerrando a aplicação. Até logo!");
@@ -70,37 +88,47 @@ public class Main {
         scanner.close();
     }
 
-    // --- MÉTODOS DE INTERFACE ---
+    // --- INTERFACE ---
 
-    private static void printMenu() {
+    private static void printMenu(String clientName) {
         System.out.println("\n==================================================");
         System.out.println("                    DSA-STREAM");
+        System.out.println("            Cliente ativo: " + clientName);
         System.out.println("==================================================");
         System.out.println("1. Buscar um Filme por ID");
         System.out.println("2. Buscar um Filme por ID (SEM Índice)");
         System.out.println("3. Buscar Filme por Trecho do Nome");
         System.out.println("4. Listar e Paginar por Categoria");
-        System.out.println("5. Executar Bateria de 20 Consultas");
-        System.out.println("6. Ler Análise dos Resultados");
+        System.out.println("5. Trocar de Cliente");
+        System.out.println("6. Executar Bateria de Consultas (3 clientes)");
+        System.out.println("7. Exibir Análise Final");
         System.out.println("0. Sair");
         System.out.println("==================================================");
     }
 
-    // --- MÉTODOS DE LÓGICA E REQUISITOS ---
-
-    private static void preloadCache(Client client, Server server) {
-        System.out.println("[SISTEMA] Pré-carregando catálogo inicial no cache do Cliente...");
-        // Modificado para pré-carregar os primeiros 50 itens que estão fisicamente na lista
-        ListNode current = server.getDatabase().getHead();
-        int count = 0;
-
-        while (current != null && count < 50) {
-            client.addToCache(current.getMovie());
-            current = current.getNext();
-            count++;
+    private static Client selectClient(Scanner scanner, Client[] clients) {
+        System.out.println("\n--- Selecione um cliente ---");
+        for (int i = 0; i < clients.length; i++) {
+            System.out.println((i + 1) + ". " + clients[i].getName());
         }
-        System.out.println("[SISTEMA] Cache inicializado com " + count + " filmes!");
+        System.out.print("Escolha (1-" + clients.length + "): ");
+
+        try {
+            int choice = scanner.nextInt();
+            scanner.nextLine();
+            if (choice >= 1 && choice <= clients.length) {
+                Client chosen = clients[choice - 1];
+                System.out.println("\n[SISTEMA] Cliente ativo: " + chosen.getName());
+                return chosen;
+            }
+        } catch (InputMismatchException e) {
+            scanner.nextLine();
+        }
+        System.out.println("[ERRO] Opção inválida. Mantendo cliente atual.");
+        return clients[0];
     }
+
+    // --- BUSCAS INTERATIVAS ---
 
     private static void interactiveSearch(Scanner scanner, Client client, Server server) {
         interactiveSearch(scanner, client, server, true);
@@ -133,47 +161,62 @@ public class Main {
         }
     }
 
-    private static void runTestBattery(Client client, Server server) {
-        System.out.println("\n==================================================");
-        System.out.println("       INICIANDO BATERIA DE 20 CONSULTAS          ");
-        System.out.println("==================================================\n");
+    // --- PRÉ-CARREGAMENTO ---
 
-        System.out.println(">>> ETAPA 1: 2 Consultas Inválidas");
-        executeQuery(client, server, -5, true);
-        executeQuery(client, server, 0, true);
-
-        System.out.println("\n>>> ETAPA 2: 6 Consultas de registros no Cache (Hits)");
-        // Como agora temos IDs reais que não são sequenciais (ex: Matrix = 603)
-        // Pegamos os IDs dos primeiros 6 itens da lista para testar o Hit
-        int count = 0;
+    private static void preloadCache(Client client, Server server) {
         ListNode current = server.getDatabase().getHead();
-        while (current != null && count < 6) {
-            executeQuery(client, server, current.getMovie().getId(), true);
+        int count = 0;
+
+        while (current != null && count < 50) {
+            client.addToCache(current.getMovie());
             current = current.getNext();
             count++;
         }
+        System.out.println("[" + client.getName() + "] Cache inicializado com " + count + " filmes!\n");
+    }
 
-        System.out.println("\n>>> ETAPA 3: 6 Consultas SEM Indexação (Miss Lento)");
-        // IDs fictícios (3 que não existem no servidor e 3 que existem mas não estão no cache)
-        int[] slowIds = {99901, 99902, 99903, 38055, 575264, 813};
-        for (int id : slowIds) executeQuery(client, server, id, false);
+    // --- BATERIA DE CONSULTAS ---
 
-        System.out.println("\n>>> ETAPA 4: 6 Consultas COM Indexação (Miss Rápido)");
-        // IDs fictícios (3 que não existem no servidor e 3 que existem mas não estão no cache)
-        int[] fastIds = {88801, 88802, 88803, 140300, 810693, 524434};
-        for (int id : fastIds) executeQuery(client, server, id, true);
+    private static void runTestBattery(Client[] clients, Server server) {
+        System.out.println("\n==================================================");
+        System.out.println("     INICIANDO BATERIA DE CONSULTAS (3 CLIENTES)  ");
+        System.out.println("==================================================\n");
 
-        System.out.println("\n[SISTEMA] Bateria de testes concluída!");
+        for (Client client : clients) {
+            System.out.println("\n>>> CLIENTE: " + client.getName() + " <<<");
+
+            System.out.println("\n>>> Etapa 1: 2 Consultas Inválidas");
+            executeQuery(client, server, -5, true);
+            executeQuery(client, server, 0, true);
+
+            System.out.println("\n>>> Etapa 2: 6 Consultas no Cache (Hit)");
+            int count = 0;
+            ListNode current = server.getDatabase().getHead();
+            while (current != null && count < 6) {
+                executeQuery(client, server, current.getMovie().getId(), true);
+                current = current.getNext();
+                count++;
+            }
+
+            System.out.println("\n>>> Etapa 3: 6 Consultas SEM Indexação (Miss)");
+            int[] slowIds = {99901, 99902, 99903, 38055, 575264, 813};
+            for (int id : slowIds) executeQuery(client, server, id, false);
+
+            System.out.println("\n>>> Etapa 4: 6 Consultas COM Indexação (Miss)");
+            int[] fastIds = {88801, 88802, 88803, 140300, 810693, 524434};
+            for (int id : fastIds) executeQuery(client, server, id, true);
+        }
+
+        System.out.println("\n[SISTEMA] Bateria de consultas concluída!\n");
+        showFinalAnalysis(clients, server);
     }
 
     private static void executeQuery(Client client, Server server, int searchId, boolean useIndex) {
-        System.out.println("\n-> Buscando ID: " + searchId);
+        System.out.println("\n[" + client.getName() + "] Buscando ID: " + searchId);
 
-        // Tenta no Cache (Cliente)
         Movie movie = client.getCache().get(searchId);
 
         if (movie == null) {
-            // Tenta no Servidor (Miss)
             if (useIndex) {
                 movie = server.requestMovieWithIndex(searchId);
             } else {
@@ -184,11 +227,88 @@ public class Main {
         client.viewMovie(movie);
     }
 
-    private static void printAnalysis() {
-        System.out.println("\n=== BREVE ANÁLISE DOS RESULTADOS ===");
-        System.out.println("1. Cache (AVL): Eficiência O(log n). Buscas resultaram em ~5 comparações.");
-        System.out.println("2. Servidor SEM Índice: Ineficiente O(n). Buscas resultaram em centenas de comparações.");
-        System.out.println("3. Servidor COM Índice: Eficiência O(1). Tabela Hash resolveu com apenas 1 ou 2 comparações.");
-        System.out.println("--------------------------------------------------");
+    // --- ANÁLISE FINAL ---
+
+    private static void showFinalAnalysis(Client[] clients, Server server) {
+        System.out.println("\n==================================================");
+        System.out.println("               ANÁLISE DOS RESULTADOS             ");
+        System.out.println("==================================================\n");
+
+        // 1. LRU Cache - Top 10 mais recentes por cliente
+        System.out.println("--- 1. TOP 10 FILMES MAIS RECENTES (LRU) POR CLIENTE ---\n");
+        for (Client client : clients) {
+            System.out.println(">>> " + client.getName() + ":");
+            List<Movie> recent = client.getRecentMovies(10);
+            if (recent.isEmpty()) {
+                System.out.println("  (Nenhum filme no cache)\n");
+            } else {
+                for (int i = 0; i < recent.size(); i++) {
+                    System.out.println("  " + (i + 1) + ". " + recent.get(i));
+                }
+                System.out.println();
+            }
+
+            // IDs removidos pelo LRU
+            List<Integer> evicted = client.getEvictionHistory();
+            if (!evicted.isEmpty()) {
+                System.out.println("  IDs removidos pelo LRU: " + evicted + "\n");
+            }
+        }
+
+        // 2. Splay de Preferências - Top 5 por cliente
+        System.out.println("--- 2. ÁRVORE SPLAY DE PREFERÊNCIAS (TOP 5 POR CLIENTE) ---\n");
+        for (Client client : clients) {
+            System.out.println(">>> " + client.getName() + ":");
+            List<SplayNode> topPrefs = client.getPreferences().getTop(5);
+            if (topPrefs.isEmpty()) {
+                System.out.println("  (Nenhuma preferência registrada)\n");
+            } else {
+                for (int i = 0; i < topPrefs.size(); i++) {
+                    Movie m = topPrefs.get(i).getValue();
+                    if (m != null) {
+                        System.out.println("  " + (i + 1) + ". [ID: " + m.getId() + "] " + m.getTitle());
+                    }
+                }
+                System.out.println();
+            }
+
+            // Recomendação baseada na raiz
+            String category = client.getRecommendation();
+            if (category != null) {
+                System.out.println("  -> Recomendação: filmes da categoria \"" + category + "\"\n");
+            }
+        }
+
+        // 3. Splay de Popularidade do Servidor - Top 10
+        System.out.println("--- 3. ÁRVORE SPLAY DE POPULARIDADE DO SERVIDOR (TOP 10) ---\n");
+        List<Movie> topPopular = server.getTopMovies(10);
+        if (topPopular.isEmpty()) {
+            System.out.println("  (Nenhum filme acessado)\n");
+        } else {
+            for (int i = 0; i < topPopular.size(); i++) {
+                Movie m = topPopular.get(i);
+                System.out.println("  " + (i + 1) + ". [ID: " + m.getId() + "] " + m.getTitle() + " (" + m.getCategory() + ")");
+            }
+            System.out.println();
+        }
+
+        // 4. Huffman Compression Stats
+        System.out.println("--- 4. COMPRESSÃO DE HUFFMAN (MENSAGENS SELECIONADAS) ---\n");
+        String[] messages = {
+            "LOGIN_OK",
+            "GET /filme/505",
+            "GET /filme/101",
+            "FILME: 505 | Matrix 1999",
+            "FILME: 101 | Avatar 2009",
+            "RECOMENDACAO: 202 | Interestelar",
+            "RECOMENDACAO: 603 | Matrix 1999",
+        };
+        for (String msg : messages) {
+            System.out.println("  Mensagem: \"" + msg + "\"");
+            System.out.println("  " + HuffmanCoding.compressionStats(msg));
+            System.out.println();
+        }
+
+        System.out.println("==================================================\n");
     }
 }
