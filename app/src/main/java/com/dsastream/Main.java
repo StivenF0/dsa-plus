@@ -7,6 +7,7 @@ import com.dsastream.model.Movie;
 import com.dsastream.server.Server;
 import com.dsastream.server.ds.ListNode;
 import com.dsastream.util.HuffmanCoding;
+import com.dsastream.util.Logger;
 
 import java.util.InputMismatchException;
 import java.util.List;
@@ -17,7 +18,7 @@ public class Main {
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
 
-        System.out.println("Inicializando Sistema DSA-STREAM...");
+        Logger.info("Main", "Inicializando Sistema DSA-STREAM...");
 
         // Server initialization
         Server server = new Server();
@@ -73,14 +74,14 @@ public class Main {
                         showFinalAnalysis(clients, server);
                         break;
                     case 0:
-                        System.out.println("\n[SISTEMA] Encerrando a aplicação. Até logo!");
+                        Logger.info("Main", "Encerrando a aplicação. Até logo!");
                         isRunning = false;
                         break;
                     default:
-                        System.out.println("\n[ERRO] Opção inválida. Tente novamente.");
+                        Logger.warn("Main", "Opção inválida.");
                 }
             } catch (InputMismatchException e) {
-                System.out.println("\n[ERRO] Por favor, digite apenas números.");
+                Logger.warn("Main", "Por favor, digite apenas números.");
                 scanner.nextLine();
             }
         }
@@ -118,13 +119,13 @@ public class Main {
             scanner.nextLine();
             if (choice >= 1 && choice <= clients.length) {
                 Client chosen = clients[choice - 1];
-                System.out.println("\n[SISTEMA] Cliente ativo: " + chosen.getName());
+                Logger.info("Main", "Cliente ativo: " + chosen.getName());
                 return chosen;
             }
         } catch (InputMismatchException e) {
             scanner.nextLine();
         }
-        System.out.println("[ERRO] Opção inválida. Mantendo cliente atual.");
+        Logger.warn("Main", "Opção inválida. Mantendo cliente atual.");
         return clients[0];
     }
 
@@ -140,7 +141,7 @@ public class Main {
             int targetId = scanner.nextInt();
             executeQuery(client, server, targetId, useIndex);
         } catch (InputMismatchException e) {
-            System.out.println("[ERRO] ID inválido. Digite um número inteiro.");
+            Logger.warn("Main", "ID inválido. Digite um número inteiro.");
             scanner.nextLine();
         }
     }
@@ -152,9 +153,9 @@ public class Main {
         List<Movie> results = server.requestMoviesByTitle(fragment);
 
         if (results == null || results.isEmpty()) {
-            System.out.println("\n[App] Nenhum filme encontrado com o trecho: \"" + fragment + "\"");
+            Logger.info("Main", "Nenhum filme encontrado com o trecho: \"" + fragment + "\"");
         } else {
-            System.out.println("\n[App] Filmes encontrados (" + results.size() + "):");
+            System.out.println("Filmes encontrados (" + results.size() + "):");
             for (Movie m : results) {
                 System.out.println(" - " + m);
             }
@@ -168,28 +169,28 @@ public class Main {
         int count = 0;
 
         while (current != null && count < 50) {
-            client.addToCache(current.getMovie());
+            client.getCache().put(current.getMovie().getId(), current.getMovie());
             current = current.getNext();
             count++;
         }
-        System.out.println("[" + client.getName() + "] Cache inicializado com " + count + " filmes!\n");
+        Logger.info(client.getName(), "Cache inicializado com " + count + " filmes");
     }
 
     // --- BATERIA DE CONSULTAS ---
 
     private static void runTestBattery(Client[] clients, Server server) {
-        System.out.println("\n==================================================");
-        System.out.println("     INICIANDO BATERIA DE CONSULTAS (3 CLIENTES)  ");
-        System.out.println("==================================================\n");
+        Logger.setLevel(Logger.Level.INFO);
+
+        System.out.println("\n========== BATERIA DE CONSULTAS (3 CLIENTES) ==========\n");
 
         for (Client client : clients) {
-            System.out.println("\n>>> CLIENTE: " + client.getName() + " <<<");
+            System.out.println(">>> " + client.getName() + " <<<");
 
-            System.out.println("\n>>> Etapa 1: 2 Consultas Inválidas");
+            System.out.println("  Etapa 1: 2 Consultas Inválidas");
             executeQuery(client, server, -5, true);
             executeQuery(client, server, 0, true);
 
-            System.out.println("\n>>> Etapa 2: 6 Consultas no Cache (Hit)");
+            System.out.println("  Etapa 2: 6 Consultas no Cache (Hit)");
             int count = 0;
             ListNode current = server.getDatabase().getHead();
             while (current != null && count < 6) {
@@ -198,21 +199,21 @@ public class Main {
                 count++;
             }
 
-            System.out.println("\n>>> Etapa 3: 6 Consultas SEM Indexação (Miss)");
+            System.out.println("  Etapa 3: 6 Consultas SEM Indexação (Miss)");
             int[] slowIds = {99901, 99902, 99903, 38055, 575264, 813};
             for (int id : slowIds) executeQuery(client, server, id, false);
 
-            System.out.println("\n>>> Etapa 4: 6 Consultas COM Indexação (Miss)");
+            System.out.println("  Etapa 4: 6 Consultas COM Indexação (Miss)");
             int[] fastIds = {88801, 88802, 88803, 140300, 810693, 524434};
             for (int id : fastIds) executeQuery(client, server, id, true);
         }
 
-        System.out.println("\n[SISTEMA] Bateria de consultas concluída!\n");
+        Logger.info("Main", "Bateria de consultas concluída!");
         showFinalAnalysis(clients, server);
     }
 
     private static void executeQuery(Client client, Server server, int searchId, boolean useIndex) {
-        System.out.println("\n[" + client.getName() + "] Buscando ID: " + searchId);
+        Logger.info("Main", "Consulta: " + client.getName() + " ID " + searchId + (useIndex ? " (COM índice)" : " (SEM índice)"));
 
         Movie movie = client.getCache().get(searchId);
 

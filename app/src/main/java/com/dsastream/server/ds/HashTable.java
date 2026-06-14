@@ -1,5 +1,7 @@
 package com.dsastream.server.ds;
 
+import com.dsastream.util.Logger;
+
 public class HashTable {
     private static class HashEntry {
         int key;
@@ -51,7 +53,7 @@ public class HashTable {
     // Busca o nó correspondente ao ID do filme usando a tabela hash
     public ListNode searchIndexed(int key) {
         if (key <= 0) {
-            System.out.println("Busca rejeitada. ID inválido: " + key);
+            Logger.warn("HashTable", "Busca rejeitada. ID inválido: " + key);
             return null;
         }
 
@@ -62,13 +64,13 @@ public class HashTable {
         while (current != null) {
             comparisions++;
             if (current.key == key) {
-                System.out.println("Busca indexada finalizada. Comparações = " + comparisions);
+                Logger.debug("HashTable", "Busca indexada ID " + key + ". Comparações = " + comparisions);
                 return current.listNode;
             }
             current = current.next;
         }
 
-        System.out.println("Filme não encontrado na tabela hash. Comparações = " + comparisions);
+        Logger.debug("HashTable", "ID " + key + " não encontrado. Comparações = " + comparisions);
         return null;
     }
 }

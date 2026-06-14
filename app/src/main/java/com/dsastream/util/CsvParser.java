@@ -16,7 +16,7 @@ public class CsvParser {
 
         try (InputStream is = CsvParser.class.getResourceAsStream(resourcePath)) {
             if (is == null) {
-                System.out.println("[CSV PARSER] Arquivo não encontrado: " + resourcePath);
+                Logger.error("CSV", "Arquivo não encontrado: " + resourcePath);
                 return records;
             }
 
@@ -43,9 +43,8 @@ public class CsvParser {
                 records.add(parseLine(multiline.toString()));
                 multiline = new StringBuilder();
             }
-
         } catch (Exception e) {
-            System.out.println("[CSV PARSER] Erro ao ler arquivo: " + e.getMessage());
+            Logger.error("CSV", "Erro ao ler arquivo: " + e.getMessage());
         }
 
         return records;

@@ -1,7 +1,5 @@
 package com.dsastream.util;
 
-// MinHeap genérico implementado com array.
-// Utilizado pela HuffmanCoding para selecionar os dois menores nós a cada iteração.
 public class MinHeap<T extends Comparable<T>> {
     private T[] heap;
     private int capacity;
@@ -22,7 +20,7 @@ public class MinHeap<T extends Comparable<T>> {
     // Insere um elemento no final e o faz subir até sua posição correta
     public void insert(T element) {
         if (size == capacity) {
-            System.out.println("[MinHeap] Heap cheio. Não foi possível inserir.");
+            Logger.warn("MinHeap", "Heap cheio. Não foi possível inserir.");
             return;
         }
         heap[size] = element;

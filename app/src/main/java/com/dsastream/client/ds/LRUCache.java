@@ -1,6 +1,7 @@
 package com.dsastream.client.ds;
 
 import com.dsastream.model.Movie;
+import com.dsastream.util.Logger;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -43,13 +44,13 @@ public class LRUCache {
         Node node = map.get(id);
 
         if (node == null) {
-            System.out.println("[CACHE MISS] (ID " + id + " não está no cache). Comparações: " + comparisons);
+            Logger.debug("Cache", "MISS ID " + id + " — " + comparisons + " comparação(ões)");
             comparisons = 0;
             return null;
         }
 
         moveToFront(node);
-        System.out.println("[CACHE HIT] (ID " + id + " encontrado no cache). Comparações: " + comparisons);
+        Logger.debug("Cache", "HIT  ID " + id + " — " + comparisons + " comparação(ões)");
         comparisons = 0;
         return node.movie;
     }
@@ -131,7 +132,7 @@ public class LRUCache {
         Node evicted = tail;
 
         evictionHistory.add(evicted.id);
-        System.out.println("[CACHE EVICT] Removendo ID " + evicted.id + " (" + evicted.movie.getTitle() + ")");
+        Logger.debug("Cache", "EVICT ID " + evicted.id + " (" + evicted.movie.getTitle() + ")");
 
         map.remove(evicted.id);
 

@@ -3,6 +3,7 @@ package com.dsastream.client;
 import com.dsastream.client.ds.LRUCache;
 import com.dsastream.common.ds.SplayTree;
 import com.dsastream.model.Movie;
+import com.dsastream.util.Logger;
 
 import java.util.List;
 
@@ -22,20 +23,13 @@ public class Client {
 
     public void viewMovie(Movie movie) {
         if (movie == null) {
-            System.out.println("\n--- [" + name + "]: Erro! Título não encontrado no servidor. ---");
+            Logger.error(name, "Filme não encontrado no servidor.");
             return;
         }
 
-        System.out.println("\n--- [" + name + "]: Preparando para exibir '" + movie.getTitle() + "' ---");
-        System.out.println(movie);
-        addToCache(movie);
-        preferences.insert(movie.getId(), movie);
-    }
-
-    public void addToCache(Movie movie) {
-        System.out.println("\n--- [" + name + "]: Adicionando '" + movie.getTitle() + "' ao cache ---");
+        Logger.info("Client", name + " assistiu: [ID: " + movie.getId() + "] " + movie.getTitle() + " (" + movie.getCategory() + ", " + movie.getYear() + ")");
         cache.put(movie.getId(), movie);
-        System.out.println("\n--- [" + name + "]: Filme '[" + movie.getId() + "] " + movie.getTitle() + "' adicionado ao cache. ---");
+        preferences.insert(movie.getId(), movie);
     }
 
     // --- Recomendação baseada na árvore splay de preferências ---

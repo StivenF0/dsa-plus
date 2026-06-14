@@ -8,6 +8,7 @@ import com.dsastream.server.ds.TitlePrefixIndex;
 import com.dsastream.common.ds.SplayNode;
 import com.dsastream.common.ds.SplayTree;
 import com.dsastream.util.CsvParser;
+import com.dsastream.util.Logger;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -32,12 +33,12 @@ public class Server {
     }
 
     public void loadInitialData() {
-        System.out.println("[SERVIDOR]: Carregando catálogo de filmes via CSV...");
+        Logger.info("Server", "Carregando catálogo de filmes via CSV...");
 
         List<String[]> records = CsvParser.parseResource("/csv/movies_dataset.csv");
 
         if (records.isEmpty()) {
-            System.out.println("[SERVIDOR]: Nenhum registro encontrado no CSV!");
+            Logger.error("Server", "Nenhum registro encontrado no CSV!");
             return;
         }
 
@@ -80,11 +81,11 @@ public class Server {
         }
         allMovies.clear();
 
-        System.out.println("[SERVIDOR]: Catálogo carregado com sucesso! Total: " + records.size() + " filmes.");
+        Logger.info("Server", "Catálogo carregado com sucesso! Total: " + records.size() + " filmes.");
     }
 
     public Movie requestMovieWithoutIndex(int id) {
-        System.out.println("\n--- [SERVIDOR]: Recebida requisição SEM índice para o ID " + id + " ---");
+        Logger.debug("Server", "Requisição SEM índice ID " + id);
         Movie movie = database.searchSequential(id);
         if (movie != null) {
             popularity.insert(id, movie);
@@ -93,7 +94,7 @@ public class Server {
     }
 
     public Movie requestMovieWithIndex(int id) {
-        System.out.println("\n--- [SERVIDOR]: Recebida requisição COM índice para o ID " + id + " ---");
+        Logger.debug("Server", "Requisição COM índice ID " + id);
         ListNode foundListNode = index.searchIndexed(id);
 
         if (foundListNode != null) {
@@ -105,7 +106,7 @@ public class Server {
     }
 
     public List<Movie> requestMoviesByTitle(String fragment) {
-        System.out.println("\n--- Servidor: Recebida requisição de busca por título: \"" + fragment + "\" ---");
+        Logger.info("Server", "Busca por título: \"" + fragment + "\"");
         String normalized = fragment.toLowerCase().trim();
 
         if (normalized.length() >= 3) {
@@ -121,7 +122,7 @@ public class Server {
                     }
                     filteredCount++;
                 }
-                System.out.println("Busca por índice de prefixo finalizada. Candidatos = " + candidates.size() + ", Filtrados = " + filteredCount + ", Resultados = " + results.size());
+                Logger.debug("Server", "Busca por prefixo \"" + fragment + "\". Candidatos = " + candidates.size() + ", Filtrados = " + filteredCount + ", Resultados = " + results.size());
                 return results;
             }
         }
