@@ -1,6 +1,7 @@
-package com.dsastream.server.ds;
+package com.dsaplus.server.ds;
 
-import com.dsastream.model.Movie;
+import com.dsaplus.model.Movie;
+import com.dsaplus.util.Logger;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -32,7 +33,7 @@ public class LinkedList {
     // Busca um filme pelo ID
     public Movie searchSequential(int id) {
         if (id <= 0) {
-            System.out.println("Busca rejeitada. ID inválido: " + id);
+            Logger.warn("LinkedList", "Busca rejeitada. ID inválido: " + id);
             return null;
         }
 
@@ -43,14 +44,14 @@ public class LinkedList {
             comparisions++;
 
             if (current.getMovie().getId() == id) {
-                System.out.println("Busca sequencial finalizada. Comparações = " + comparisions);
+                Logger.debug("LinkedList", "Busca sequencial ID " + id + ". Comparações = " + comparisions);
                 return current.getMovie();
             }
 
             current = current.getNext();
         }
 
-        System.out.println("Filme não encontrado. Comparações = " + comparisions);
+        Logger.debug("LinkedList", "Filme ID " + id + " não encontrado. Comparações = " + comparisions);
         return null;
     }
 
@@ -68,12 +69,7 @@ public class LinkedList {
             }
             current = current.getNext();
         }
-        System.out.println(
-            "Busca sequencial por trecho finalizada. Comparações = " +
-                comparisons +
-                ", resultados = " +
-                results.size()
-        );
+        Logger.debug("LinkedList", "Busca por trecho \"" + fragment + "\". Comparações = " + comparisons + ", resultados = " + results.size());
         return results;
     }
 
