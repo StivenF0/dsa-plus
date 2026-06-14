@@ -5,11 +5,8 @@ import com.dsastream.server.ds.ListNode;
 import com.dsastream.server.ds.HashTable;
 import com.dsastream.server.ds.LinkedList;
 import com.dsastream.server.ds.TitlePrefixIndex;
+import com.dsastream.util.CsvParser;
 
-import java.io.BufferedReader;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -33,56 +30,42 @@ public class Server {
     public void loadInitialData() {
         System.out.println("[SERVIDOR]: Carregando catálogo de filmes via CSV...");
 
-        try (InputStream is = getClass().getResourceAsStream("/csv/movies_dataset.csv");
-             BufferedReader br = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8))) {
+        List<String[]> records = CsvParser.parseResource("/csv/movies_dataset.csv");
 
-            if (is == null) {
-                System.out.println("[SERVIDOR]: Ficheiro CSV não encontrado!");
-                return;
-            }
-
-            String line;
-            boolean isFirstLine = true;
-
-            while ((line = br.readLine()) != null) {
-                if (isFirstLine) {
-                    isFirstLine = false;
-                    continue;
-                }
-
-                // As colunas são separadas por ponto e vírgula (;)
-                String[] data = line.split(";");
-
-                if (data.length >= 3) {
-                    int id = Integer.parseInt(data[0].trim());
-                    String title = data[1].trim();
-                    String category = data[2].trim();
-
-                    Movie movie = new Movie(id, title, category);
-
-                    // Adicionando os dados ao banco de dados e aos índices
-                    ListNode insertedNode = database.add(movie);
-                    index.put(id, insertedNode);
-                    if (title.length() >= 3) {
-                        String prefix = title.substring(0, 3).toLowerCase();
-                        titleIndex.put(prefix, movie);
-                    }
-
-                    // Building category index
-                    String categoryKey = category.toLowerCase().trim();
-                    List<Movie> categoryMovies = categoryIndex.get(categoryKey);
-                    if (categoryMovies == null) {
-                        categoryMovies = new ArrayList<>();
-                        categoryIndex.put(categoryKey, categoryMovies);
-                    }
-                    categoryMovies.add(movie);
-                }
-            }
-            System.out.println("[SERVIDOR]: Catálogo TMDB carregado com sucesso!");
-
-        } catch (Exception e) {
-            System.out.println("[SERVIDOR]: Erro ao ler o ficheiro CSV: " + e.getMessage());
+        if (records.isEmpty()) {
+            System.out.println("[SERVIDOR]: Nenhum registro encontrado no CSV!");
+            return;
         }
+
+        for (String[] data : records) {
+            if (data.length < 3) continue;
+
+            int id = Integer.parseInt(data[0].trim());
+            String title = data[1].trim();
+            String category = data[2].trim();
+            int year = data.length >= 4 && !data[3].trim().isEmpty()
+                    ? Integer.parseInt(data[3].trim()) : 0;
+            String synopsis = data.length >= 5 ? data[4].trim() : "";
+
+            Movie movie = new Movie(id, title, category, year, synopsis);
+
+            ListNode insertedNode = database.add(movie);
+            index.put(id, insertedNode);
+            if (title.length() >= 3) {
+                String prefix = title.substring(0, 3).toLowerCase();
+                titleIndex.put(prefix, movie);
+            }
+
+            String categoryKey = category.toLowerCase().trim();
+            List<Movie> categoryMovies = categoryIndex.get(categoryKey);
+            if (categoryMovies == null) {
+                categoryMovies = new ArrayList<>();
+                categoryIndex.put(categoryKey, categoryMovies);
+            }
+            categoryMovies.add(movie);
+        }
+
+        System.out.println("[SERVIDOR]: Catálogo carregado com sucesso! Total: " + records.size() + " filmes.");
     }
 
     public Movie requestMovieWithoutIndex(int id) {
