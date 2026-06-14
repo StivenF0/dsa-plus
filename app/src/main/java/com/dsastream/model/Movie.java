@@ -10,14 +10,6 @@ public class Movie {
 
     public Movie() {}
 
-    public Movie(int id, String title, String category) {
-        this.id = id;
-        this.title = title;
-        this.category = category;
-        this.year = 0;
-        this.synopsis = "";
-    }
-
     public Movie(int id, String title, String category, int year, String synopsis) {
         this.id = id;
         this.title = title;
