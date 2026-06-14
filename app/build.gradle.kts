@@ -21,7 +21,7 @@ java {
 }
 
 application {
-    mainClass = "com.dsastream.Main"
+    mainClass = "com.dsaplus.Main"
 }
 
 tasks.named<Test>("test") {
