@@ -1,6 +1,6 @@
-package com.dsastream.common.ds;
+package com.dsaplus.common.ds;
 
-import com.dsastream.model.Movie;
+import com.dsaplus.model.Movie;
 
 public class SplayNode {
     private int key;

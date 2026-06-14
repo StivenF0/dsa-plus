@@ -1,7 +1,7 @@
-package com.dsastream.server.ds;
+package com.dsaplus.server.ds;
 
-import com.dsastream.model.Movie;
-import com.dsastream.util.Logger;
+import com.dsaplus.model.Movie;
+import com.dsaplus.util.Logger;
 import java.util.ArrayList;
 import java.util.List;
 

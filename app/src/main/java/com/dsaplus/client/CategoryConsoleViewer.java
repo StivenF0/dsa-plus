@@ -1,7 +1,7 @@
-package com.dsastream.client;
+package com.dsaplus.client;
 
-import com.dsastream.model.Movie;
-import com.dsastream.server.Server;
+import com.dsaplus.model.Movie;
+import com.dsaplus.server.Server;
 import java.util.List;
 import java.util.Scanner;
 

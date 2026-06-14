@@ -1,4 +1,4 @@
-package com.dsastream.util;
+package com.dsaplus.util;
 
 public class MinHeap<T extends Comparable<T>> {
     private T[] heap;

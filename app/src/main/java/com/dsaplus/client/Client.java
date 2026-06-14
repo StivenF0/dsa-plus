@@ -1,9 +1,9 @@
-package com.dsastream.client;
+package com.dsaplus.client;
 
-import com.dsastream.client.ds.LRUCache;
-import com.dsastream.common.ds.SplayTree;
-import com.dsastream.model.Movie;
-import com.dsastream.util.Logger;
+import com.dsaplus.client.ds.LRUCache;
+import com.dsaplus.common.ds.SplayTree;
+import com.dsaplus.model.Movie;
+import com.dsaplus.util.Logger;
 
 import java.util.List;
 

@@ -1,6 +1,6 @@
-# DSA-STREAM: Simulador de Streaming
+# DSA-PLUS: Simulador de Streaming — v2
 
-O **DSA-STREAM** é uma aplicação de interface de linha de comando (CLI) desenvolvida em Java que simula a arquitetura Cliente-Servidor de uma plataforma de streaming (como Netflix ou Amazon Prime Video). O projeto foi concebido para a disciplina de Estruturas de Dados II, focando-se na implementação prática e análise de performance de estruturas de dados avançadas.
+O **DSA-PLUS** é a segunda versão de uma aplicação de interface de linha de comando (CLI) desenvolvida em Java que simula a arquitetura Cliente-Servidor de uma plataforma de streaming (como Netflix ou Amazon Prime Video). O projeto foi concebido para a disciplina de Estruturas de Dados II, focando-se na implementação prática e análise de performance de estruturas de dados avançadas.
 
 ---
 
@@ -50,7 +50,7 @@ O cliente simula o comportamento de um dispositivo local focado em economia de b
 
 ### Executando a Aplicação
 
-Abra o terminal na pasta raiz do projeto (`dsa-stream`) e execute o comando correspondente ao seu sistema operacional:
+Abra o terminal na pasta raiz do projeto (`dsa-plus`) e execute o comando correspondente ao seu sistema operacional:
 
 **No Windows:**
 
@@ -73,13 +73,15 @@ O menu interativo será renderizado e ficará aguardando a interação do utiliz
 ## Estrutura de Diretórios Principal
 
 ```text
-dsa-stream/
+dsa-plus/
 ├── app/src/
 │   └── main/
-│       ├── java/com/dsastream/
-│       │   ├── client/         # Componentes do Cliente (Cache AVL, Fila FIFO, Views de Paginação)
+│       ├── java/com/dsaplus/
+│       │   ├── client/         # Componentes do Cliente (LRUCache, SplayTree preferências)
+│       │   ├── common/ds/      # Estruturas compartilhadas (SplayTree genérica)
 │       │   ├── model/          # Modelagem de Dados e Entidades (Movie)
-│       │   ├── server/         # Componentes do Servidor (HashTables, LinkedList, Índices)
+│       │   ├── server/         # Componentes do Servidor (HashTables, LinkedList, SplayTree)
+│       │   ├── util/           # Utilitários (CsvParser, HuffmanCoding, Logger, MinHeap)
 │       │   └── Main.java       # Ponto de Entrada da Interface CLI
 │       └── resources/csv/      # Dataset real do TMDB (movies_dataset.csv)
 │

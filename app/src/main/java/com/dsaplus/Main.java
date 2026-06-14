@@ -1,13 +1,13 @@
-package com.dsastream;
+package com.dsaplus;
 
-import com.dsastream.client.CategoryConsoleViewer;
-import com.dsastream.client.Client;
-import com.dsastream.common.ds.SplayNode;
-import com.dsastream.model.Movie;
-import com.dsastream.server.Server;
-import com.dsastream.server.ds.ListNode;
-import com.dsastream.util.HuffmanCoding;
-import com.dsastream.util.Logger;
+import com.dsaplus.client.CategoryConsoleViewer;
+import com.dsaplus.client.Client;
+import com.dsaplus.common.ds.SplayNode;
+import com.dsaplus.model.Movie;
+import com.dsaplus.server.Server;
+import com.dsaplus.server.ds.ListNode;
+import com.dsaplus.util.HuffmanCoding;
+import com.dsaplus.util.Logger;
 
 import java.util.InputMismatchException;
 import java.util.List;
@@ -18,7 +18,7 @@ public class Main {
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
 
-        Logger.info("Main", "Inicializando Sistema DSA-STREAM...");
+        Logger.info("Main", "Inicializando Sistema DSA-PLUS...");
 
         // Server initialization
         Server server = new Server();
@@ -93,7 +93,7 @@ public class Main {
 
     private static void printMenu(String clientName) {
         System.out.println("\n==================================================");
-        System.out.println("                    DSA-STREAM");
+        System.out.println("                    DSA-PLUS");
         System.out.println("            Cliente ativo: " + clientName);
         System.out.println("==================================================");
         System.out.println("1. Buscar um Filme por ID");

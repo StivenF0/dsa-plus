@@ -1,6 +1,6 @@
-package com.dsastream.server.ds;
+package com.dsaplus.server.ds;
 
-import com.dsastream.util.Logger;
+import com.dsaplus.util.Logger;
 
 public class HashTable {
     private static class HashEntry {

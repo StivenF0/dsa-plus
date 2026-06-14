@@ -1,4 +1,4 @@
-package com.dsastream.model;
+package com.dsaplus.model;
 
 public class Movie {
 

@@ -1,14 +1,14 @@
-package com.dsastream.server;
+package com.dsaplus.server;
 
-import com.dsastream.model.Movie;
-import com.dsastream.server.ds.ListNode;
-import com.dsastream.server.ds.HashTable;
-import com.dsastream.server.ds.LinkedList;
-import com.dsastream.server.ds.TitlePrefixIndex;
-import com.dsastream.common.ds.SplayNode;
-import com.dsastream.common.ds.SplayTree;
-import com.dsastream.util.CsvParser;
-import com.dsastream.util.Logger;
+import com.dsaplus.model.Movie;
+import com.dsaplus.server.ds.ListNode;
+import com.dsaplus.server.ds.HashTable;
+import com.dsaplus.server.ds.LinkedList;
+import com.dsaplus.server.ds.TitlePrefixIndex;
+import com.dsaplus.common.ds.SplayNode;
+import com.dsaplus.common.ds.SplayTree;
+import com.dsaplus.util.CsvParser;
+import com.dsaplus.util.Logger;
 
 import java.util.ArrayList;
 import java.util.HashMap;

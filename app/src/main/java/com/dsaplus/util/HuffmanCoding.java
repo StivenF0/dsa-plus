@@ -1,4 +1,4 @@
-package com.dsastream.util;
+package com.dsaplus.util;
 
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
