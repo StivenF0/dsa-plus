@@ -21,7 +21,7 @@ public class Main {
         Server server = new Server();
         server.loadInitialData();
 
-        Client client = new Client();
+        Client client = new Client("Cliente 1");
         preloadCache(client, server); // Load 50 movies into client's cache
 
         boolean isRunning = true;
@@ -170,7 +170,7 @@ public class Main {
         System.out.println("\n-> Buscando ID: " + searchId);
 
         // Tenta no Cache (Cliente)
-        Movie movie = client.getCacheTree().search(searchId);
+        Movie movie = client.getCache().get(searchId);
 
         if (movie == null) {
             // Tenta no Servidor (Miss)

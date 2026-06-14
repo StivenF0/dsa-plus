@@ -1,58 +1,72 @@
 package com.dsastream.client;
 
-import com.dsastream.client.ds.AVLTree;
-import com.dsastream.client.ds.CacheQueue;
+import com.dsastream.client.ds.LRUCache;
+import com.dsastream.common.ds.SplayTree;
 import com.dsastream.model.Movie;
 
+import java.util.List;
+
 public class Client {
-    private final AVLTree cacheTree;
-    private final CacheQueue evictionQueue;
+    private final LRUCache cache;
+    private final SplayTree preferences;
+    private final String name;
 
     @SuppressWarnings("FieldCanBeLocal")
     private final int MAX_CACHE_SIZE = 50;
 
-    public Client() {
-        this.cacheTree = new AVLTree();
-        this.evictionQueue = new CacheQueue();
+    public Client(String name) {
+        this.name = name;
+        this.cache = new LRUCache(MAX_CACHE_SIZE);
+        this.preferences = new SplayTree();
     }
 
     public void viewMovie(Movie movie) {
         if (movie == null) {
-            System.out.println("\n--- [CLIENTE]: Erro! Título não encontrado no servidor. ---");
+            System.out.println("\n--- [" + name + "]: Erro! Título não encontrado no servidor. ---");
             return;
         }
 
-        System.out.println("\n--- [CLIENTE]: Preparando para exibir '" + movie.getTitle() + "' ---");
+        System.out.println("\n--- [" + name + "]: Preparando para exibir '" + movie.getTitle() + "' ---");
         System.out.println(movie);
         addToCache(movie);
+        preferences.insert(movie.getId(), movie);
     }
 
     public void addToCache(Movie movie) {
-        System.out.println("\n--- [CLIENTE]: Adicionando '" + movie.getTitle() + "' ao cache ---");
-        int id = movie.getId();
-
-        // Verifica se o filme já está no cache para evitar duplicatas
-        if (cacheTree.search(id) != null) {
-            System.out.println("\n--- [CLIENTE]: O filme '" + movie.getTitle() + "' já está no cache. ---");
-            return;
-        }
-
-        // Se o cache estiver cheio, remove o filme mais antigo antes de adicionar o novo
-        if (evictionQueue.getSize() >= MAX_CACHE_SIZE) {
-            int oldestId = evictionQueue.dequeue();
-            cacheTree.remove(oldestId);
-            System.out.println("\n--- [CLIENTE]: Cache cheio! Removendo o filme ID " + oldestId + " ---");
-        }
-
-        // Adiciona o novo filme ao cache e atualiza a fila de expulsão
-        cacheTree.insert(id, movie);
-        evictionQueue.enqueue(id);
-        System.out.println("\n--- [CLIENTE]: Filme '[" + movie.getId() + "] " + movie.getTitle() + "' adicionado ao cache. ---");
+        System.out.println("\n--- [" + name + "]: Adicionando '" + movie.getTitle() + "' ao cache ---");
+        cache.put(movie.getId(), movie);
+        System.out.println("\n--- [" + name + "]: Filme '[" + movie.getId() + "] " + movie.getTitle() + "' adicionado ao cache. ---");
     }
 
-    // --- Getters e Setters ---
+    // --- Recomendação baseada na árvore splay de preferências ---
+    // A raiz da árvore contém o filme mais acessado pelo usuário
+    public String getRecommendation() {
+        if (preferences.isEmpty()) {
+            return null;
+        }
+        Movie top = preferences.getRoot().getValue();
+        return top.getCategory();
+    }
 
-    public AVLTree getCacheTree() {
-        return cacheTree;
+    // --- Getters ---
+
+    public LRUCache getCache() {
+        return cache;
+    }
+
+    public SplayTree getPreferences() {
+        return preferences;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public List<Movie> getRecentMovies(int n) {
+        return cache.getRecentMovies(n);
+    }
+
+    public List<Integer> getEvictionHistory() {
+        return cache.getEvictionHistory();
     }
 }
