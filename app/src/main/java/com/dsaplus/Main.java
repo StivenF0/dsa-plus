@@ -6,7 +6,6 @@ import com.dsaplus.common.ds.SplayNode;
 import com.dsaplus.model.Movie;
 import com.dsaplus.server.Server;
 import com.dsaplus.server.ds.ListNode;
-import com.dsaplus.util.HuffmanCoding;
 import com.dsaplus.util.Logger;
 
 import java.util.InputMismatchException;
