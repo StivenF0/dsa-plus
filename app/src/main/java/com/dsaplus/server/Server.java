@@ -4,7 +4,7 @@ import com.dsaplus.model.Movie;
 import com.dsaplus.server.ds.ListNode;
 import com.dsaplus.server.ds.HashTable;
 import com.dsaplus.server.ds.LinkedList;
-import com.dsaplus.server.ds.TitlePrefixIndex;
+import com.dsaplus.channel.CommunicationChannel;
 import com.dsaplus.common.ds.SplayNode;
 import com.dsaplus.common.ds.SplayTree;
 import com.dsaplus.util.CsvParser;
@@ -150,6 +150,18 @@ public class Server {
 
         int endIndex = Math.min(startIndex + pageSize, allMovies.size());
         return allMovies.subList(startIndex, endIndex);
+    }
+
+    // Processa uma requisição comprimida recebida pelo canal de comunicação
+    public String processMovieRequest(String compressedReq, CommunicationChannel channel, boolean useIndex) {
+        String reqStr = channel.decompress(compressedReq);
+        int id = Integer.parseInt(reqStr);
+        Logger.debug("Server", "Descomprimido: ID " + id + (useIndex ? " (COM índice)" : " (SEM índice)"));
+        Movie movie = useIndex ? requestMovieWithIndex(id) : requestMovieWithoutIndex(id);
+        String payload = movie != null ? movie.toDataString() : "NULL";
+        String compressedRes = channel.compress(payload);
+        Logger.debug("Server", "Resposta comprimida (" + payload.length() + " bytes → " + compressedRes.length() + " bits)");
+        return compressedRes;
     }
 
     // Retorna os n filmes mais populares (mais próximos da raiz da splay)

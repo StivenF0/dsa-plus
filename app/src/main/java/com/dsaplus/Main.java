@@ -7,12 +7,13 @@ import com.dsaplus.model.Movie;
 import com.dsaplus.server.Server;
 import com.dsaplus.server.ds.ListNode;
 import com.dsaplus.util.Logger;
-
 import java.util.InputMismatchException;
 import java.util.List;
 import java.util.Scanner;
 
 public class Main {
+
+    private static CommunicationChannel channel;
 
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
@@ -23,12 +24,16 @@ public class Main {
         Server server = new Server();
         server.loadInitialData();
 
+        // Communication channel with Huffman compression
+        String corpus = buildCorpus(server);
+        channel = new CommunicationChannel(corpus);
+        Logger.info(
+            "Main",
+            "Canal de comunicação inicializado com Huffman (" + corpus.length() + " caracteres de corpus)"
+        );
+
         // Three pre-registered clients
-        Client[] clients = {
-            new Client("Alice"),
-            new Client("Bob"),
-            new Client("Charlie")
-        };
+        Client[] clients = { new Client("Alice"), new Client("Bob"), new Client("Charlie") };
 
         // Pre-load 50 movies into each client's cache
         for (Client client : clients) {
@@ -55,21 +60,12 @@ public class Main {
                         interactiveSearch(scanner, client, server, false);
                         break;
                     case 3:
-                        interactiveSearchByTitle(scanner, server);
-                        break;
-                    case 4:
-                        CategoryConsoleViewer.handleCategoryPagination(
-                            scanner, server,
-                            (id) -> executeQuery(client, server, id, true)
-                        );
-                        break;
-                    case 5:
                         currentClient = selectClient(scanner, clients);
                         break;
-                    case 6:
+                    case 4:
                         runTestBattery(clients, server);
                         break;
-                    case 7:
+                    case 5:
                         showFinalAnalysis(clients, server);
                         break;
                     case 0:
@@ -97,11 +93,9 @@ public class Main {
         System.out.println("==================================================");
         System.out.println("1. Buscar um Filme por ID");
         System.out.println("2. Buscar um Filme por ID (SEM Índice)");
-        System.out.println("3. Buscar Filme por Trecho do Nome");
-        System.out.println("4. Listar e Paginar por Categoria");
-        System.out.println("5. Trocar de Cliente");
-        System.out.println("6. Executar Bateria de Consultas (3 clientes)");
-        System.out.println("7. Exibir Análise Final");
+        System.out.println("3. Trocar de Cliente");
+        System.out.println("4. Executar Bateria de Consultas (3 clientes)");
+        System.out.println("5. Exibir Análise Final");
         System.out.println("0. Sair");
         System.out.println("==================================================");
     }
@@ -145,23 +139,23 @@ public class Main {
         }
     }
 
-    private static void interactiveSearchByTitle(Scanner scanner, Server server) {
-        System.out.print("\nDigite um trecho do título do filme: ");
-        String fragment = scanner.nextLine();
-
-        List<Movie> results = server.requestMoviesByTitle(fragment);
-
-        if (results == null || results.isEmpty()) {
-            Logger.info("Main", "Nenhum filme encontrado com o trecho: \"" + fragment + "\"");
-        } else {
-            System.out.println("Filmes encontrados (" + results.size() + "):");
-            for (Movie m : results) {
-                System.out.println(" - " + m);
-            }
-        }
-    }
-
     // --- PRÉ-CARREGAMENTO ---
+
+    private static String buildCorpus(Server server) {
+        StringBuilder corpus = new StringBuilder();
+        corpus.append("LOGIN_OKRECOMENDACAO");
+        corpus.append("0123456789");
+        corpus.append("|,:;-'!?()\"\\/. \n");
+        ListNode current = server.getDatabase().getHead();
+        int count = 0;
+        while (current != null && count < 100) {
+            Movie m = current.getMovie();
+            corpus.append(m.getId()).append(m.getTitle()).append(m.getCategory());
+            current = current.getNext();
+            count++;
+        }
+        return corpus.toString();
+    }
 
     private static void preloadCache(Client client, Server server) {
         ListNode current = server.getDatabase().getHead();
@@ -179,6 +173,7 @@ public class Main {
 
     private static void runTestBattery(Client[] clients, Server server) {
         Logger.setLevel(Logger.Level.INFO);
+        channel.clearHistory();
 
         System.out.println("\n========== BATERIA DE CONSULTAS (3 CLIENTES) ==========\n");
 
@@ -199,32 +194,27 @@ public class Main {
             }
 
             System.out.println("  Etapa 3: 6 Consultas SEM Indexação (Miss)");
-            int[] slowIds = {99901, 99902, 99903, 38055, 575264, 813};
+            int[] slowIds = { 99901, 99902, 99903, 38055, 575264, 813 };
             for (int id : slowIds) executeQuery(client, server, id, false);
 
             System.out.println("  Etapa 4: 6 Consultas COM Indexação (Miss)");
-            int[] fastIds = {88801, 88802, 88803, 140300, 810693, 524434};
+            int[] fastIds = { 88801, 88802, 88803, 140300, 810693, 524434 };
             for (int id : fastIds) executeQuery(client, server, id, true);
         }
 
         Logger.info("Main", "Bateria de consultas concluída!");
-        showFinalAnalysis(clients, server);
     }
 
     private static void executeQuery(Client client, Server server, int searchId, boolean useIndex) {
-        Logger.info("Main", "Consulta: " + client.getName() + " ID " + searchId + (useIndex ? " (COM índice)" : " (SEM índice)"));
-
-        Movie movie = client.getCache().get(searchId);
-
-        if (movie == null) {
-            if (useIndex) {
-                movie = server.requestMovieWithIndex(searchId);
-            } else {
-                movie = server.requestMovieWithoutIndex(searchId);
-            }
-        }
-
-        client.viewMovie(movie);
+        Logger.info(
+            "Main",
+            "Consulta: " +
+                client.getName() +
+                " ID " +
+                searchId +
+                (useIndex ? " (COM índice)" : " (SEM índice)")
+        );
+        client.requestMovie(server, channel, searchId, useIndex);
     }
 
     // --- ANÁLISE FINAL ---
@@ -287,25 +277,47 @@ public class Main {
         } else {
             for (int i = 0; i < topPopular.size(); i++) {
                 Movie m = topPopular.get(i);
-                System.out.println("  " + (i + 1) + ". [ID: " + m.getId() + "] " + m.getTitle() + " (" + m.getCategory() + ")");
+                System.out.println(
+                    "  " +
+                        (i + 1) +
+                        ". [ID: " +
+                        m.getId() +
+                        "] " +
+                        m.getTitle() +
+                        " (" +
+                        m.getCategory() +
+                        ")"
+                );
             }
             System.out.println();
         }
 
         // 4. Huffman Compression Stats
-        System.out.println("--- 4. COMPRESSÃO DE HUFFMAN (MENSAGENS SELECIONADAS) ---\n");
-        String[] messages = {
-            "LOGIN_OK",
-            "GET /filme/505",
-            "GET /filme/101",
-            "FILME: 505 | Matrix 1999",
-            "FILME: 101 | Avatar 2009",
-            "RECOMENDACAO: 202 | Interestelar",
-            "RECOMENDACAO: 603 | Matrix 1999",
+        System.out.println("--- 4. COMPRESSÃO DE HUFFMAN (MENSAGENS DEMONSTRATIVAS) ---\n");
+        String[] demoMessages = {
+            "603",
+            "813",
+            "140300",
+            "603|Matrix|Ação|1999|Um hacker descobre que a realidade é uma simulação criada por máquinas inteligentes.",
+            "813|Apertem os Cintos, o Piloto Sumiu|Comédia|1980|O piloto Ted Striker assume os controles de um avião quando a tripulação adoece.",
+            "140300|Kung Fu Panda 3|Animação|2016|Po forma um exército de pandas para combater um espírito maligno.",
         };
-        for (String msg : messages) {
-            System.out.println("  Mensagem: \"" + msg + "\"");
-            System.out.println("  " + HuffmanCoding.compressionStats(msg));
+        for (String msg : demoMessages) {
+            String bits = channel.compress(msg);
+            int originalBytes = msg.getBytes(java.nio.charset.StandardCharsets.UTF_8).length;
+            int compressedBytes = (int) Math.ceil(bits.length() / 8.0);
+            double ratio = (1 - (double) compressedBytes / originalBytes) * 100;
+            System.out.println("  \"" + msg + "\"");
+            System.out.println(
+                "    Original: " +
+                    originalBytes +
+                    " bytes | Comprimido: " +
+                    bits.length() +
+                    " bits (" +
+                    compressedBytes +
+                    " bytes) | Taxa: " +
+                    String.format("%.1f%%", ratio)
+            );
             System.out.println();
         }
 
