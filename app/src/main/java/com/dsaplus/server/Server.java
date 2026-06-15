@@ -11,14 +11,11 @@ import com.dsaplus.util.CsvParser;
 import com.dsaplus.util.Logger;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 public class Server {
     private final LinkedList database;
     private final HashTable index;
-    private final TitlePrefixIndex titleIndex;
-    private final HashMap<String, List<Movie>> categoryIndex;
     private final SplayTree popularity;
 
     // 509 foi escolhido como o tamanho da tabela hash por ser o número primo mais próximo de 2^9 (512)
@@ -27,8 +24,6 @@ public class Server {
     public Server() {
         this.database = new LinkedList();
         this.index = new HashTable(TABLE_SIZE);
-        this.titleIndex = new TitlePrefixIndex(TABLE_SIZE);
-        this.categoryIndex = new HashMap<>();
         this.popularity = new SplayTree();
     }
 
@@ -59,18 +54,6 @@ public class Server {
 
             ListNode insertedNode = database.add(movie);
             index.put(id, insertedNode);
-            if (title.length() >= 3) {
-                String prefix = title.substring(0, 3).toLowerCase();
-                titleIndex.put(prefix, movie);
-            }
-
-            String categoryKey = category.toLowerCase().trim();
-            List<Movie> categoryMovies = categoryIndex.get(categoryKey);
-            if (categoryMovies == null) {
-                categoryMovies = new ArrayList<>();
-                categoryIndex.put(categoryKey, categoryMovies);
-            }
-            categoryMovies.add(movie);
         }
 
         // Pré-popula a árvore splay de popularidade em ordem reversa (menos popular primeiro)
@@ -103,53 +86,6 @@ public class Server {
             return movie;
         }
         return null;
-    }
-
-    public List<Movie> requestMoviesByTitle(String fragment) {
-        Logger.info("Server", "Busca por título: \"" + fragment + "\"");
-        String normalized = fragment.toLowerCase().trim();
-
-        if (normalized.length() >= 3) {
-            String prefix = normalized.substring(0, 3);
-            List<Movie> candidates = titleIndex.get(prefix);
-
-            if (candidates != null) {
-                List<Movie> results = new ArrayList<>();
-                int filteredCount = 0;
-                for (Movie m : candidates) {
-                    if (m.getTitle().toLowerCase().contains(normalized)) {
-                        results.add(m);
-                    }
-                    filteredCount++;
-                }
-                Logger.debug("Server", "Busca por prefixo \"" + fragment + "\". Candidatos = " + candidates.size() + ", Filtrados = " + filteredCount + ", Resultados = " + results.size());
-                return results;
-            }
-        }
-
-        // Fallback para busca sequencial se o fragmento for < 3 ou o prefixo não for encontrado
-        return database.searchByTitleFragment(fragment);
-    }
-
-    public int getTotalMoviesInCategory(String category) {
-        List<Movie> movies = categoryIndex.get(category.toLowerCase().trim());
-        return movies != null ? movies.size() : 0;
-    }
-
-    public List<Movie> requestMoviesByCategory(String category, int page, int pageSize) {
-        List<Movie> allMovies = categoryIndex.get(category.toLowerCase().trim());
-
-        if (allMovies == null || allMovies.isEmpty()) {
-            return new ArrayList<>();
-        }
-
-        int startIndex = (page - 1) * pageSize;
-        if (startIndex >= allMovies.size() || startIndex < 0) {
-            return new ArrayList<>();
-        }
-
-        int endIndex = Math.min(startIndex + pageSize, allMovies.size());
-        return allMovies.subList(startIndex, endIndex);
     }
 
     // Processa uma requisição comprimida recebida pelo canal de comunicação

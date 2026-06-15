@@ -2,8 +2,6 @@ package com.dsaplus.server.ds;
 
 import com.dsaplus.model.Movie;
 import com.dsaplus.util.Logger;
-import java.util.ArrayList;
-import java.util.List;
 
 public class LinkedList {
 
@@ -53,24 +51,6 @@ public class LinkedList {
 
         Logger.debug("LinkedList", "Filme ID " + id + " não encontrado. Comparações = " + comparisions);
         return null;
-    }
-
-    // Busca filmes cujo título contém o fragmento fornecido (ignora maiúsculas/minúsculas)
-    public List<Movie> searchByTitleFragment(String fragment) {
-        List<Movie> results = new ArrayList<>();
-        String normalizedFragment = fragment.toLowerCase().trim();
-        ListNode current = head;
-        int comparisons = 0;
-
-        while (current != null) {
-            comparisons++;
-            if (current.getMovie().getTitle().toLowerCase().contains(normalizedFragment)) {
-                results.add(current.getMovie());
-            }
-            current = current.getNext();
-        }
-        Logger.debug("LinkedList", "Busca por trecho \"" + fragment + "\". Comparações = " + comparisons + ", resultados = " + results.size());
-        return results;
     }
 
     // --- Getters e Setters ---
