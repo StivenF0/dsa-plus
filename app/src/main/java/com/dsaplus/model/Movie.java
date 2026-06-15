@@ -18,6 +18,42 @@ public class Movie {
         this.synopsis = synopsis;
     }
 
+    public String toDataString() {
+        return id + "|" + escape(title) + "|" + escape(category) + "|" + year + "|" + escape(synopsis);
+    }
+
+    public static Movie fromDataString(String data) {
+        String[] parts = data.split("(?<!\\\\)\\|", 5);
+        if (parts.length < 5) return null;
+        try {
+            int id = Integer.parseInt(parts[0].trim());
+            String title = unescape(parts[1]);
+            String category = unescape(parts[2]);
+            int year = Integer.parseInt(parts[3].trim());
+            String synopsis = parts.length > 4 ? unescape(parts[4]) : "";
+            return new Movie(id, title, category, year, synopsis);
+        } catch (NumberFormatException e) {
+            return null;
+        }
+    }
+
+    private static String escape(String s) {
+        return s.replace("\\", "\\\\").replace("|", "\\|");
+    }
+
+    private static String unescape(String s) {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < s.length(); i++) {
+            if (s.charAt(i) == '\\' && i + 1 < s.length()) {
+                sb.append(s.charAt(i + 1));
+                i++;
+            } else {
+                sb.append(s.charAt(i));
+            }
+        }
+        return sb.toString().trim();
+    }
+
     // --- Getters e Setters ---
 
     public int getId() {
