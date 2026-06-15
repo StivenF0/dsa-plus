@@ -1,6 +1,6 @@
 package com.dsaplus;
 
-import com.dsaplus.client.CategoryConsoleViewer;
+import com.dsaplus.channel.CommunicationChannel;
 import com.dsaplus.client.Client;
 import com.dsaplus.common.ds.SplayNode;
 import com.dsaplus.model.Movie;
