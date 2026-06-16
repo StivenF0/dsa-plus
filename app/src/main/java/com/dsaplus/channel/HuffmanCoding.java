@@ -1,10 +1,9 @@
 package com.dsaplus.channel;
 
+import com.dsaplus.util.HashMap;
 import com.dsaplus.util.MinHeap;
 
 import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
-import java.util.Map;
 
 public class HuffmanCoding {
 
@@ -35,11 +34,11 @@ public class HuffmanCoding {
         }
     }
 
-    private final Map<Character, String> codeMap;
+    private final HashMap<Character, String> codeMap;
     private final HuffmanNode root;
 
     public HuffmanCoding(String corpus) {
-        Map<Character, Integer> freqMap = buildFreqMap(corpus);
+        HashMap<Character, Integer> freqMap = buildFreqMap(corpus);
         this.root = buildTree(freqMap);
         this.codeMap = new HashMap<>();
         if (this.root != null) {
@@ -111,20 +110,20 @@ public class HuffmanCoding {
         }
     }
 
-    private static Map<Character, Integer> buildFreqMap(String text) {
-        Map<Character, Integer> freq = new HashMap<>();
+    private static HashMap<Character, Integer> buildFreqMap(String text) {
+        HashMap<Character, Integer> freq = new HashMap<>();
         for (char c : text.toCharArray()) {
             freq.put(c, freq.getOrDefault(c, 0) + 1);
         }
         return freq;
     }
 
-    private static HuffmanNode buildTree(Map<Character, Integer> freqMap) {
+    private static HuffmanNode buildTree(HashMap<Character, Integer> freqMap) {
         if (freqMap.isEmpty()) return null;
 
         MinHeap<HuffmanNode> heap = new MinHeap<>(freqMap.size());
 
-        for (Map.Entry<Character, Integer> entry : freqMap.entrySet()) {
+        for (HashMap.Entry<Character, Integer> entry : freqMap.entrySet()) {
             heap.insert(new HuffmanNode(entry.getKey(), entry.getValue()));
         }
 
@@ -138,7 +137,7 @@ public class HuffmanCoding {
         return heap.removeMin();
     }
 
-    private static void buildCodeMap(HuffmanNode node, String prefix, Map<Character, String> codeMap) {
+    private static void buildCodeMap(HuffmanNode node, String prefix, HashMap<Character, String> codeMap) {
         if (node == null) return;
 
         if (node.isLeaf()) {
