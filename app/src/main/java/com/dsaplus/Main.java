@@ -33,7 +33,7 @@ public class Main {
         );
 
         // Three pre-registered clients
-        Client[] clients = { new Client("Alice"), new Client("Bob"), new Client("Charlie") };
+        Client[] clients = { new Client("Aline"), new Client("Paulo"), new Client("Lucas") };
 
         // Pre-load 50 movies into each client's cache
         for (Client client : clients) {

@@ -10,7 +10,7 @@ O **DSA-PLUS** é a segunda versão de uma aplicação de interface de linha de 
 - **Busca Otimizada:** Pesquisa de filmes por ID (com hash table para busca indexada $O(1)$ e sem índice para busca sequencial $O(n)$) e por trechos ou prefixos do título.
 - **Paginação por Categoria:** Navegação dinâmica e paginada por obras agrupadas por categoria (Ação, Drama, Comédia, etc.) em tempo constante.
 - **Cache LRU:** Cada cliente possui cache local com capacidade de 50 filmes utilizando política **Least Recently Used** (LRU), implementada com HashMap + DoublyLinkedList para hits $O(1)$.
-- **Multi-cliente:** Suporte a 3 usuários simultâneos (Alice, Bob, Charlie), cada um com cache e árvore de preferências independentes.
+- **Multi-cliente:** Suporte a 3 usuários simultâneos (Aline, Paulo, Lucas), cada um com cache e árvore de preferências independentes.
 - **Sistema de Recomendação:** Baseado em Splay Tree de preferências — o filme mais acessado (raiz da árvore) determina a categoria recomendada.
 - **Rastreamento de Popularidade:** O servidor mantém uma Splay Tree de popularidade que se reorganiza a cada acesso, mantendo os filmes mais requisitados próximos à raiz.
 - **Compressão Huffman:** Mensagens do sistema (LOGIN_OK, consultas, recomendações) são comprimidas com codificação de Huffman utilizando MinHeap próprio, exibindo taxa de compressão na análise final.
@@ -52,7 +52,7 @@ O cliente simula o comportamento de um dispositivo local focado em economia de b
 
 ### 5. Camada de Apresentação (CLI)
 
-- **`Main` e `CategoryConsoleViewer`:** Isolam as interações de menus, capturas de teclado e renderização de telas das regras de negócio do servidor ou do cliente. O menu principal oferece 3 clientes (Alice, Bob, Charlie), bateria automatizada de 60 consultas e tela de análise final com estatísticas completas.
+- **`Main` e `CategoryConsoleViewer`:** Isolam as interações de menus, capturas de teclado e renderização de telas das regras de negócio do servidor ou do cliente. O menu principal oferece 3 clientes (Aline, Paulo, Lucas), bateria automatizada de 60 consultas e tela de análise final com estatísticas completas.
 
 ---
 
