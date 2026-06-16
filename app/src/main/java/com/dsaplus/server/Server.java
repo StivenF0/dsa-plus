@@ -100,6 +100,23 @@ public class Server {
         return compressedRes;
     }
 
+    // Processa uma requisição comprimida de filmes populares
+    public String processTopMoviesRequest(String compressedReq, CommunicationChannel channel) {
+        String reqStr = channel.decompress(compressedReq);
+        int n = Integer.parseInt(reqStr);
+        Logger.debug("Server", "Requisição de top " + n + " filmes populares");
+        List<Movie> top = getTopMovies(n);
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < top.size(); i++) {
+            if (i > 0) sb.append("\n");
+            sb.append(top.get(i).toDataString());
+        }
+        String payload = sb.toString();
+        String compressedRes = channel.compress(payload);
+        Logger.debug("Server", "Top filmes comprimidos (" + payload.length() + " bytes → " + compressedRes.length() + " bits)");
+        return compressedRes;
+    }
+
     // Retorna os n filmes mais populares (mais próximos da raiz da splay)
     public List<Movie> getTopMovies(int n) {
         List<Movie> top = new ArrayList<>();

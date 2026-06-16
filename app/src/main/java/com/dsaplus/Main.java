@@ -63,9 +63,15 @@ public class Main {
                         currentClient = selectClient(scanner, clients);
                         break;
                     case 4:
-                        runTestBattery(clients, server);
+                        showClientRecommendations(client);
                         break;
                     case 5:
+                        showGeneralRecommendations(server);
+                        break;
+                    case 6:
+                        runTestBattery(clients, server);
+                        break;
+                    case 7:
                         showFinalAnalysis(clients, server);
                         break;
                     case 0:
@@ -94,8 +100,10 @@ public class Main {
         System.out.println("1. Buscar um Filme por ID");
         System.out.println("2. Buscar um Filme por ID (SEM Índice)");
         System.out.println("3. Trocar de Cliente");
-        System.out.println("4. Executar Bateria de Consultas (3 clientes)");
-        System.out.println("5. Exibir Análise Final");
+        System.out.println("4. Recomendações para o Cliente");
+        System.out.println("5. Recomendações Gerais da Plataforma");
+        System.out.println("6. Executar Bateria de Consultas (3 clientes)");
+        System.out.println("7. Exibir Análise Final");
         System.out.println("0. Sair");
         System.out.println("==================================================");
     }
@@ -137,6 +145,53 @@ public class Main {
             Logger.warn("Main", "ID inválido. Digite um número inteiro.");
             scanner.nextLine();
         }
+    }
+
+    // --- RECOMENDAÇÕES ---
+
+    private static void showClientRecommendations(Client client) {
+        System.out.println("\n--- RECOMENDAÇÕES PARA " + client.getName().toUpperCase() + " ---\n");
+
+        System.out.println("Filmes mais assistidos por " + client.getName() + ":");
+        List<SplayNode> topPrefs = client.getPreferences().getTop(5);
+        if (topPrefs.isEmpty()) {
+            System.out.println("  (Nenhum filme assistido ainda)\n");
+        } else {
+            for (int i = 0; i < topPrefs.size(); i++) {
+                Movie m = topPrefs.get(i).getValue();
+                if (m != null) {
+                    System.out.println("  " + (i + 1) + ". " + m);
+                }
+            }
+            System.out.println();
+        }
+
+        String category = client.getRecommendation();
+        if (category != null) {
+            System.out.println("Categoria recomendada para " + client.getName() + ": \"" + category + "\"\n");
+        }
+    }
+
+    private static void showGeneralRecommendations(Server server) {
+        System.out.println("\n--- RECOMENDAÇÕES GERAIS DA PLATAFORMA ---\n");
+
+        String compressedRes = channel.requestTopMovies(server, 5);
+        String data = channel.decompress(compressedRes);
+
+        if (data.isEmpty()) {
+            System.out.println("  (Nenhum filme popular ainda)\n");
+            return;
+        }
+
+        String[] movieLines = data.split("\n");
+        System.out.println("Filmes mais populares na plataforma:");
+        for (int i = 0; i < movieLines.length; i++) {
+            Movie m = Movie.fromDataString(movieLines[i]);
+            if (m != null) {
+                System.out.println("  " + (i + 1) + ". " + m);
+            }
+        }
+        System.out.println();
     }
 
     // --- PRÉ-CARREGAMENTO ---

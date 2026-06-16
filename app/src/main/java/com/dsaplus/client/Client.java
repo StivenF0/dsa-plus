@@ -29,7 +29,7 @@ public class Client {
             return;
         }
 
-        Logger.info("Client", name + " assistiu: [ID: " + movie.getId() + "] " + movie.getTitle() + " (" + movie.getCategory() + ", " + movie.getYear() + ")");
+        Logger.info("Client", name + " assistiu: " + movie.toString() + " | Sinopse: " + movie.getSynopsis());
         cache.put(movie.getId(), movie);
         preferences.insert(movie.getId(), movie);
     }

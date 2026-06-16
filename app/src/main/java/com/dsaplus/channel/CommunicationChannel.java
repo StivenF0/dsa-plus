@@ -44,6 +44,14 @@ public class CommunicationChannel {
         return compressedRes;
     }
 
+    public String requestTopMovies(Server server, int n) {
+        Logger.debug("Channel", "Repassando requisição de top filmes ao servidor...");
+        String compressedReq = compress(String.valueOf(n));
+        String compressedRes = server.processTopMoviesRequest(compressedReq, this);
+        Logger.debug("Channel", "Top filmes comprimidos recebidos do servidor, retornando ao cliente...");
+        return compressedRes;
+    }
+
     public void clearHistory() {
         history.clear();
     }
